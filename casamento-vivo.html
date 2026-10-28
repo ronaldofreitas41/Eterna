@@ -1,0 +1,469 @@
+<title>Casamento Vivo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Pinyon+Script&family=Italiana&display=swap">
+<style>
+/* Layout: herbário editorial — coluna larga com notas de margem; cada seção é uma "prancha" com rótulo de catálogo à esquerda */
+:root{
+  --paper:#FAFCF9; --paper-2:#F1F5F0; --ink:#17271E; --ink-2:#4A5D51; --moss:#2F6A48; --sage:#DCE7DD; --petal:#C9705A; --line:#D3DED5;
+  --display:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1611; --paper-2:#152019; --ink:#E4ECE5; --ink-2:#A3B5A8; --moss:#86C29C; --sage:#1D2C23; --petal:#E39A85; --line:#2A3A30; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0E1611; --paper-2:#152019; --ink:#E4ECE5; --ink-2:#A3B5A8; --moss:#86C29C; --sage:#1D2C23; --petal:#E39A85; --line:#2A3A30; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:400;text-wrap:balance;margin:0;line-height:1.08}
+h2{font-size:clamp(2rem,4.4vw,3.2rem)}
+h3{font-size:1.4rem}
+p{margin:0}
+.mono{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.lede{font-size:1.12rem;color:var(--ink-2);max-width:60ch}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--moss);outline-offset:3px;border-radius:4px}
+
+/* ---------- masthead ---------- */
+.mast{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding-block:22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{font-family:var(--display);font-style:italic;font-size:1.35rem}
+.brand b{font-style:normal;font-weight:500}
+
+/* ---------- hero ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:56px;padding-block:64px 72px;align-items:center}
+.hero h1{font-size:clamp(2.7rem,6.4vw,5.2rem);letter-spacing:-.01em}
+.hero h1 em{color:var(--moss)}
+.hero .text{display:grid;gap:24px;min-width:0}
+.phases{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px;background:var(--paper-2);flex-wrap:wrap}
+.phases button{border:0;background:none;padding:8px 18px;border-radius:999px;font-weight:500;font-size:.95rem;color:var(--ink-2)}
+.phases button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.phase-note{min-height:3.2em;color:var(--ink-2);max-width:52ch}
+
+/* phone */
+.phone{justify-self:center;width:100%;max-width:330px;aspect-ratio:9/18.5;border-radius:42px;border:10px solid var(--ink);background:#FFFFFF;box-shadow:0 30px 60px -30px rgba(23,39,30,.45);overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;padding:30px 20px 20px;display:flex;flex-direction:column;gap:14px;color:#17271E;font-size:.86rem;overflow:hidden}
+.screen .names{font-family:"Pinyon Script",cursive;font-size:2.2rem;text-align:center;line-height:1;color:#244D35}
+.screen .meta{text-align:center;font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:#5B6E61}
+.sprig{display:block;margin:0 auto;width:120px;height:26px}
+.tile{border:1px solid #DCE5DD;border-radius:14px;padding:12px 14px;background:#F6F9F5;display:grid;gap:4px}
+.tile .k{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#5B6E61}
+.tile .v{font-family:var(--display);font-size:1.15rem;line-height:1.2}
+.big{font-family:var(--display);font-size:3rem;line-height:1;text-align:center;font-variant-numeric:tabular-nums}
+.live{display:inline-flex;align-items:center;gap:6px;background:#B5452F;color:#FFFFFF;font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;padding:3px 9px;border-radius:999px;align-self:center}
+.live::before{content:"";width:6px;height:6px;border-radius:50%;background:#FFFFFF;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.cta{background:#244D35;color:#FFFFFF;border-radius:12px;padding:11px;text-align:center;font-weight:600}
+.grid-ph{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.grid-ph span{aspect-ratio:1;border-radius:6px}
+.screen{transition:opacity .35s ease}
+.screen.fade{opacity:0}
+
+/* ---------- plates ---------- */
+.plate{border-top:1px solid var(--line);padding-block:72px}
+.plate-head{display:grid;grid-template-columns:180px minmax(0,1fr);gap:32px;margin-bottom:44px}
+.plate-head .tag{display:grid;gap:4px;align-content:start}
+.plate-head .tag .n{font-family:var(--display);font-style:italic;font-size:1.6rem;color:var(--moss)}
+.plate-head .body{display:grid;gap:16px;min-width:0}
+
+/* ---------- studio ---------- */
+.studio{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+.chat{display:grid;gap:14px;min-width:0}
+.bubble{padding:14px 18px;border-radius:18px;max-width:92%;font-size:.97rem}
+.bubble.me{background:var(--ink);color:var(--paper);justify-self:end;border-bottom-right-radius:4px}
+.bubble.ai{background:var(--paper-2);border:1px solid var(--line);border-bottom-left-radius:4px}
+.bubble .who{display:block;font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;opacity:.7;margin-bottom:4px}
+.refs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ref{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--paper)}
+.ref .sw{height:62px;display:flex}
+.ref .sw i{flex:1}
+.ref .cap{padding:8px 10px;font-size:.78rem;line-height:1.35}
+.ref .cap b{display:block;font-family:var(--mono);font-weight:500;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.mixer{border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:12px;background:var(--paper-2)}
+.mix-row{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:center;gap:10px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:5px 12px;font-size:.85rem;font-variant-numeric:tabular-nums}
+.seg button[aria-pressed="true"]{border-color:var(--moss);background:var(--moss);color:var(--paper)}
+.apply{justify-self:start;border:0;background:none;color:var(--moss);font-weight:600;padding:0;text-decoration:underline;text-underline-offset:4px}
+
+.preview{border-radius:18px;overflow:hidden;border:1px solid var(--line);min-width:0;transition:background .4s,color .4s}
+.pv-bar{display:flex;align-items:center;gap:6px;padding:9px 12px;background:var(--paper-2);border-bottom:1px solid var(--line)}
+.pv-bar i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.pv-bar span{margin-left:8px;font-family:var(--mono);font-size:.7rem;color:var(--ink-2)}
+.pv{padding:26px 26px 30px;display:grid;gap:20px;transition:background .4s,color .4s}
+.pv-nav{display:flex;gap:16px;font-size:.78rem;letter-spacing:.06em;flex-wrap:wrap}
+.pv-nav.center{justify-content:center;text-transform:uppercase;letter-spacing:.18em;font-size:.7rem}
+.pv-nav.pill span{padding:4px 12px;border-radius:999px;border:1px solid currentColor}
+.pv-nav.split{justify-content:space-between}
+.pv-inv{text-align:center;display:grid;gap:8px;padding-block:22px;border-block:1px solid currentColor}
+.pv-inv .t{font-size:2.5rem;line-height:1.05}
+.pv-inv .d{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase}
+.pv-time{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.85rem}
+.pv-time b{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums}
+.pv-note{font-family:var(--mono);font-size:.68rem;color:var(--ink-2);padding:10px 14px;border-top:1px solid var(--line);background:var(--paper-2)}
+
+/* ---------- story book ---------- */
+.book{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:28px;align-items:start}
+.queue{display:grid;gap:12px;min-width:0}
+.queue-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:10px;background:var(--paper);transition:opacity .3s, transform .3s}
+.card.out{opacity:0;transform:translateX(20px)}
+.card .from{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.card .from strong{font-weight:600}
+.card q{font-family:var(--display);font-size:1.08rem;line-height:1.45;quotes:"“" "”"}
+.sug{font-size:.8rem;color:var(--moss)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts button{border:1px solid var(--line);background:var(--paper-2);border-radius:8px;padding:6px 12px;font-size:.83rem}
+.acts button.pri{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:24px;color:var(--ink-2);text-align:center}
+.chapters{display:grid;gap:18px;min-width:0}
+.chap{border-left:2px solid var(--moss);padding-left:16px;display:grid;gap:6px}
+.chap h4{margin:0;font-family:var(--display);font-weight:400;font-style:italic;font-size:1.25rem}
+.chap ul{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:.9rem;color:var(--ink-2)}
+.chap li.new{animation:land .6s ease}
+@keyframes land{from{background:var(--sage)}to{background:transparent}}
+.capsule{border-radius:16px;background:var(--ink);color:var(--paper);padding:20px;display:grid;gap:8px}
+.capsule .mono{color:inherit;opacity:.7}
+.capsule .cd{font-family:var(--display);font-size:2.4rem;line-height:1;font-variant-numeric:tabular-nums}
+.private{font-size:.85rem;color:var(--ink-2)}
+
+/* ---------- timeline phases ---------- */
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.col{padding:26px 24px;display:grid;gap:14px;align-content:start;min-width:0}
+.col+.col{border-left:1px solid var(--line)}
+.col .mono{color:var(--moss)}
+.col ul{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:.93rem}
+.col li{padding-left:16px;position:relative}
+.col li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;border:1px solid var(--moss)}
+.col[data-p="1"] li::before{background:var(--moss)}
+.col[data-p="2"] li::before{background:var(--petal);border-color:var(--petal)}
+
+/* ---------- layers ---------- */
+.layers{display:grid;gap:14px}
+.layer-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.layer{border:1px solid var(--line);border-radius:16px;padding:22px;display:grid;gap:8px;background:var(--paper-2)}
+.layer .mono{color:var(--moss)}
+.merge{display:block;width:100%;height:46px}
+.legacy{border-radius:18px;padding:30px;background:var(--moss);color:var(--paper);display:grid;gap:8px;text-align:center}
+.legacy h3{font-size:clamp(1.6rem,3vw,2.2rem)}
+.legacy p{max-width:56ch;margin-inline:auto;opacity:.92}
+.thesis{margin-top:56px;display:grid;grid-template-columns:180px minmax(0,1fr);gap:32px}
+.thesis blockquote{margin:0;font-family:var(--display);font-size:clamp(1.35rem,2.6vw,1.9rem);line-height:1.35;max-width:36ch}
+.thesis blockquote em{color:var(--moss)}
+
+footer{border-top:1px solid var(--line);padding-block:28px 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media (max-width:900px){
+  .hero,.studio,.book{grid-template-columns:minmax(0,1fr)}
+  .hero{gap:40px;padding-block:44px}
+  .plate-head,.thesis{grid-template-columns:minmax(0,1fr);gap:12px}
+  .three,.layer-row{grid-template-columns:minmax(0,1fr)}
+  .col+.col{border-left:0;border-top:1px solid var(--line)}
+  .merge{display:none}
+}
+@media (max-width:520px){
+  .refs{grid-template-columns:minmax(0,1fr)}
+  .ref{display:grid;grid-template-columns:80px minmax(0,1fr)}
+  .ref .sw{height:auto}
+  .mix-row{grid-template-columns:minmax(0,1fr)}
+  .pv{padding:20px}
+  .pv-inv .t{font-size:2rem}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="brand"><b>Casamento</b> Vivo</div>
+    <span class="mono">Demonstração conceitual · protótipo navegável</span>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="h-hero">
+    <div class="text">
+      <span class="mono">Um site que acompanha o casamento</span>
+      <h1 id="h-hero">O site muda conforme o casamento <em>acontece</em>.</h1>
+      <p class="lede">Os noivos criam a identidade conversando com a IA. Os convidados ajudam a contar a história. Antes, durante e depois do dia, o mesmo endereço vira convite, ponto de encontro e lembrança.</p>
+      <div class="phases" role="tablist" aria-label="Fase do casamento">
+        <button role="tab" id="ph-0" aria-selected="true" data-phase="0">Antes</button>
+        <button role="tab" id="ph-1" aria-selected="false" data-phase="1">Durante</button>
+        <button role="tab" id="ph-2" aria-selected="false" data-phase="2">Depois</button>
+      </div>
+      <p class="phase-note" id="phase-note" aria-live="polite"></p>
+    </div>
+    <div class="phone" aria-label="Site dos convidados no celular">
+      <div class="screen" id="screen"></div>
+    </div>
+  </section>
+
+  <!-- 1. ESTÚDIO -->
+  <section class="plate" aria-labelledby="h-studio">
+    <div class="plate-head">
+      <div class="tag"><span class="n">i.</span><span class="mono">Estúdio criativo</span></div>
+      <div class="body">
+        <h2 id="h-studio">A noiva cria o site conversando com a IA</h2>
+        <p class="lede">Ela envia referências do Pinterest, do Instagram ou do celular e descreve o que quer. A IA transforma tudo num sistema visual consistente, aplicado a cada página e componente. Dá para pedir “o convite desta, o menu daquela, as cores da outra”.</p>
+      </div>
+    </div>
+
+    <div class="studio">
+      <div class="chat">
+        <div class="bubble me"><span class="who">Marina</span>Quero um site elegante, com fundo branco, detalhes verdes, flores delicadas e uma identidade parecida com as referências que enviei. Quero contar nossa história de um jeito emocionante, mas sem exagero.</div>
+        <div class="bubble ai"><span class="who">Estúdio</span>Vou criar uma proposta com identidade botânica, tipografia editorial e uma linha do tempo interativa para a história de vocês. O convite, o cronograma e as páginas dos convidados seguem o mesmo estilo.</div>
+
+        <div class="refs" aria-label="Referências enviadas">
+          <div class="ref"><div class="sw" id="sw-0"></div><div class="cap"><b>Ref. 1 · Pinterest</b>Convite em letterpress com caligrafia</div></div>
+          <div class="ref"><div class="sw" id="sw-1"></div><div class="cap"><b>Ref. 2 · Instagram</b>Site minimalista, menu centralizado</div></div>
+          <div class="ref"><div class="sw" id="sw-2"></div><div class="cap"><b>Ref. 3 · Celular</b>Foto do jardim de oliveiras da fazenda</div></div>
+        </div>
+
+        <div class="bubble me"><span class="who">Marina</span>Gostei desse convite, mas quero o menu da segunda referência e as cores da terceira.</div>
+
+        <div class="mixer" aria-label="Combinar referências">
+          <div class="mix-row"><span class="mono">Convite</span><div class="seg" data-key="inv"></div></div>
+          <div class="mix-row"><span class="mono">Menu</span><div class="seg" data-key="nav"></div></div>
+          <div class="mix-row"><span class="mono">Cores</span><div class="seg" data-key="pal"></div></div>
+          <button class="apply" id="apply">Aplicar o pedido da Marina</button>
+        </div>
+      </div>
+
+      <div class="preview" aria-live="polite">
+        <div class="pv-bar"><i></i><i></i><i></i><span>marinaetiago.casamentovivo.com.br</span></div>
+        <div class="pv" id="pv">
+          <nav class="pv-nav" id="pv-nav"><span>Nossa história</span><span>Programação</span><span>Presença</span><span>Hospedagem</span></nav>
+          <div class="pv-inv">
+            <span class="d">Com a bênção de suas famílias</span>
+            <span class="t" id="pv-title">Marina &amp; Tiago</span>
+            <span class="d">14 · março · 2027 — Itatiba, SP</span>
+          </div>
+          <div class="pv-time">
+            <b>16h30</b><span>Cerimônia no jardim de oliveiras</span>
+            <b>18h00</b><span>Coquetel na varanda da sede</span>
+            <b>19h40</b><span>Primeira dança</span>
+          </div>
+        </div>
+        <div class="pv-note" id="pv-note"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. LIVRO DE HISTÓRIAS -->
+  <section class="plate" aria-labelledby="h-book">
+    <div class="plate-head">
+      <div class="tag"><span class="n">ii.</span><span class="mono">Livro de histórias coletivo</span></div>
+      <div class="body">
+        <h2 id="h-book">Os convidados ajudam a construir a história</h2>
+        <p class="lede">Pessoas convidadas enviam lembranças, conselhos e fotos antigas. A IA sugere em qual capítulo cada uma se encaixa. Nada é publicado sem os noivos decidirem: publicar, manter privado ou guardar na cápsula do tempo.</p>
+      </div>
+    </div>
+
+    <div class="book">
+      <div class="queue">
+        <div class="queue-h"><h3>Aguardando revisão</h3><span class="mono" id="q-count"></span></div>
+        <div id="queue" class="queue"></div>
+      </div>
+      <div class="chapters">
+        <div class="queue-h"><h3>Capítulos publicados</h3><span class="mono">visível para convidados</span></div>
+        <div id="chapters" class="chapters"></div>
+        <p class="private" id="private-line"></p>
+        <div class="capsule">
+          <span class="mono">Cápsula do tempo · abre no 1º aniversário</span>
+          <span class="cd" id="cap-days"></span>
+          <span id="cap-count"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. FASES -->
+  <section class="plate" aria-labelledby="h-phases">
+    <div class="plate-head">
+      <div class="tag"><span class="n">iii.</span><span class="mono">Ciclo do site</span></div>
+      <div class="body">
+        <h2 id="h-phases">Expectativa, participação, memória</h2>
+        <p class="lede">O site não é montado uma vez e deixado parado. Ele troca de papel em cada fase, usando o conteúdo que as fases anteriores reuniram.</p>
+      </div>
+    </div>
+    <div class="three">
+      <div class="col" data-p="0">
+        <span class="mono">Antes · expectativa</span><h3>Um convite vivo</h3>
+        <ul><li>História do casal e contagem regressiva</li><li>Confirmação de presença e gestão de convidados</li><li>Programação, hospedagem e transporte</li><li>Coleta de memórias e mensagens</li><li>Atualizações por grupo de convidados</li></ul>
+      </div>
+      <div class="col" data-p="1">
+        <span class="mono">Durante · participação</span><h3>O ponto de encontro do evento</h3>
+        <ul><li>QR Code nas mesas para entrar</li><li>Envio de fotos e mensagens</li><li>Programação atualizada e avisos</li><li>Perguntas e missões criadas pelos noivos</li><li>Galeria colaborativa com moderação</li></ul>
+      </div>
+      <div class="col" data-p="2">
+        <span class="mono">Depois · memória</span><h3>Um legado digital</h3>
+        <ul><li>Álbum colaborativo de fotos e vídeos</li><li>A história do dia, em ordem cronológica</li><li>Livro de mensagens dos convidados</li><li>Cápsula do tempo para datas futuras</li><li>Página de agradecimento personalizada</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. CAMADAS -->
+  <section class="plate" aria-labelledby="h-layers">
+    <div class="plate-head">
+      <div class="tag"><span class="n">iv.</span><span class="mono">O centro do produto</span></div>
+      <div class="body">
+        <h2 id="h-layers">Três camadas, uma história</h2>
+        <p class="lede">O Casamento Vivo conecta o que os noivos querem, o que a plataforma organiza e o que os convidados trazem.</p>
+      </div>
+    </div>
+    <div class="layers">
+      <div class="layer-row">
+        <div class="layer"><span class="mono">Os noivos</span><h3>A visão</h3><p>Referências, desejos, identidade visual e decisões.</p></div>
+        <div class="layer"><span class="mono">A plataforma</span><h3>A inteligência</h3><p>IA que organiza o conteúdo, adapta o design e conecta as informações do evento.</p></div>
+        <div class="layer"><span class="mono">Os convidados</span><h3>A participação</h3><p>Memórias, fotos, mensagens e contribuições que enriquecem a experiência.</p></div>
+      </div>
+      <svg class="merge" viewBox="0 0 1000 46" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M166 0 C166 30 500 16 500 46 M500 0 L500 46 M834 0 C834 30 500 16 500 46" fill="none" stroke="var(--moss)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="legacy"><span class="mono" style="color:inherit;opacity:.8">O resultado</span><h3>A história que permanece</h3><p>Uma recordação digital única, criada pelo casal e pelas pessoas que fizeram parte daquele momento.</p></div>
+    </div>
+
+    <div class="thesis">
+      <span class="mono">Hipótese de diferenciação</span>
+      <blockquote>Nenhuma funcionalidade precisa ser inédita sozinha. O diferencial é um só produto unir <em>criação visual por IA</em>, <em>organização do evento</em> e <em>memória coletiva</em> numa experiência contínua.</blockquote>
+    </div>
+  </section>
+
+  <footer>
+    <span class="brand"><b>Casamento</b> Vivo</span>
+    <span class="mono">Casal, datas e mensagens são exemplos ilustrativos</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const WEDDING = new Date(2027,2,14);       // 14 mar 2027 (exemplo)
+  const CAPSULE = new Date(2028,2,14);       // 1º aniversário
+  const today = new Date(); today.setHours(0,0,0,0);
+  const days = d => Math.max(0, Math.round((d - today)/864e5));
+  const sprig = '<svg class="sprig" viewBox="0 0 120 26" aria-hidden="true"><path d="M6 13 H114" stroke="#7FA58B" stroke-width="1" fill="none"/>' +
+    [20,38,56,74,92].map((x,i)=>`<ellipse cx="${x}" cy="${i%2?17:9}" rx="7" ry="3" transform="rotate(${i%2?25:-25} ${x} ${i%2?17:9})" fill="#9DBFA6"/>`).join('') +
+    '<circle cx="60" cy="13" r="3" fill="#E3A592"/></svg>';
+
+  /* ---------- hero phases ---------- */
+  const notes = [
+    `Antes: o site é o convite. Contagem regressiva, confirmação de presença, hospedagem e transporte, e a coleta de memórias para o livro de histórias.`,
+    `Durante: o convidado escaneia o QR Code da mesa e entra num ponto de encontro com programação ao vivo, avisos, fotos e missões.`,
+    `Depois: o mesmo endereço vira álbum, livro de mensagens e cápsula do tempo. Os noivos escolhem o que fica público e o que fica só para eles.`
+  ];
+  const screens = [
+    () => `<div class="names">Marina &amp; Tiago</div>${sprig}<div class="meta">Fazenda Santa Bárbara · Itatiba</div>
+      <div class="tile" style="text-align:center"><span class="k">faltam</span><span class="big">${days(WEDDING)}</span><span class="k">dias · 14 mar 2027</span></div>
+      <div class="tile"><span class="k">Sua mesa · família da noiva</span><span class="v">Van sai do hotel às 15h40</span></div>
+      <div class="tile"><span class="k">Livro de histórias</span><span>A Marina pediu uma lembrança sua da época da faculdade.</span></div>
+      <div class="cta">Confirmar presença</div>`,
+    () => `<span class="live">AO VIVO</span><div class="names" style="font-size:1.8rem">Marina &amp; Tiago</div>
+      <div class="tile"><span class="k">Agora · 19h40</span><span class="v">Primeira dança no salão</span></div>
+      <div class="tile"><span class="k">Missão dos noivos</span><span>Tire uma foto com alguém que você conheceu hoje.</span></div>
+      <div class="tile"><span class="k">Aviso</span><span>Bolo cortado às 22h. A última van sai às 1h30.</span></div>
+      <div class="grid-ph">${['#C9DCCD','#E9C6B8','#A9C7B1','#E0E9DF','#B9D2C0','#F0D9CF'].map(c=>`<span style="background:${c}"></span>`).join('')}</div>
+      <div class="cta">Enviar foto</div>`,
+    () => `<div class="names">Obrigado</div>${sprig}<div class="meta">14 · 03 · 2027</div>
+      <div class="tile"><span class="k">Álbum colaborativo</span><span class="v">1.284 fotos · 96 vídeos</span></div>
+      <div class="tile"><span class="k">Livro de mensagens</span><span class="v">312 mensagens</span></div>
+      <div class="tile"><span class="k">Cápsula do tempo</span><span>Abre em 14 de março de 2028 — ${days(CAPSULE)} dias.</span></div>
+      <div class="cta">Ver a história do dia</div>`
+  ];
+  const screen = document.getElementById('screen'), note = document.getElementById('phase-note');
+  const tabs = [...document.querySelectorAll('.phases button')];
+  let phase = 0, timer;
+  function setPhase(p, user){
+    phase = p;
+    tabs.forEach((t,i)=>t.setAttribute('aria-selected', i===p));
+    note.textContent = notes[p];
+    screen.classList.add('fade');
+    setTimeout(()=>{ screen.innerHTML = screens[p](); screen.classList.remove('fade'); }, 180);
+    if (user) clearInterval(timer);
+  }
+  tabs.forEach((t,i)=>t.addEventListener('click',()=>setPhase(i,true)));
+  screen.innerHTML = screens[0](); note.textContent = notes[0];
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) timer = setInterval(()=>setPhase((phase+1)%3), 5200);
+
+  /* ---------- studio mixer ---------- */
+  const REFS = [
+    { pal:['#FFFFFF','#2B2B2B','#9C7B55'], palName:'marfim e sépia',
+      inv:{font:'"Pinyon Script",cursive', name:'caligrafia em letterpress'},
+      nav:{cls:'split', name:'menu distribuído'} },
+    { pal:['#F7F7F5','#111111','#111111'], palName:'branco e preto',
+      inv:{font:'"Italiana",var(--display)', name:'tipografia fina e espaçada'},
+      nav:{cls:'center', name:'menu centralizado em caixa alta'} },
+    { pal:['#FFFFFF','#23412F','#7FA58B'], palName:'branco com verde-oliveira',
+      inv:{font:'var(--display)', name:'serifa editorial'},
+      nav:{cls:'pill', name:'menu em pílulas'} }
+  ];
+  REFS.forEach((r,i)=>{ document.getElementById('sw-'+i).innerHTML = r.pal.concat(i===2?['#DCE7DD']:i===1?['#D9D9D4']:['#E8DCC8']).map(c=>`<i style="background:${c}"></i>`).join(''); });
+  const state = { inv:2, nav:2, pal:0 };
+  document.querySelectorAll('.seg').forEach(seg=>{
+    seg.innerHTML = [0,1,2].map(i=>`<button type="button" id="seg-${seg.dataset.key}-${i}" data-i="${i}">Ref. ${i+1}</button>`).join('');
+    seg.addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; state[seg.dataset.key]=+b.dataset.i; render(); });
+  });
+  const pv = document.getElementById('pv'), pvNav = document.getElementById('pv-nav'), pvTitle = document.getElementById('pv-title'), pvNote = document.getElementById('pv-note');
+  function render(){
+    document.querySelectorAll('.seg').forEach(seg=>[...seg.children].forEach(b=>b.setAttribute('aria-pressed', +b.dataset.i===state[seg.dataset.key])));
+    const [bg,ink,acc] = REFS[state.pal].pal;
+    pv.style.background = bg; pv.style.color = ink;
+    pv.querySelector('.pv-inv').style.borderColor = acc;
+    pv.querySelectorAll('.pv-time b').forEach(b=>b.style.color = acc);
+    pvTitle.style.fontFamily = REFS[state.inv].inv.font;
+    pvTitle.style.fontSize = state.inv===0 ? '3rem' : '';
+    pvNav.className = 'pv-nav ' + REFS[state.nav].nav.cls;
+    pvNote.textContent = `Convite: ${REFS[state.inv].inv.name} (ref. ${state.inv+1}) · Menu: ${REFS[state.nav].nav.name} (ref. ${state.nav+1}) · Cores: ${REFS[state.pal].palName} (ref. ${state.pal+1})`;
+  }
+  document.getElementById('apply').addEventListener('click',()=>{ Object.assign(state,{inv:0,nav:1,pal:2}); render(); });
+  render();
+
+  /* ---------- story book ---------- */
+  const chapters = {
+    antes:{ t:'Antes de se conhecerem', items:['A Marina aos 8 anos, decidida a ser veterinária — enviado pela mãe'] },
+    encontro:{ t:'O encontro', items:['A fila do bandejão da Unicamp, em 2016 — contado pela Bia'] },
+    conselhos:{ t:'Conselhos para a vida a dois', items:[] }
+  };
+  let queue = [
+    { who:'Rafael', rel:'padrinho do Tiago', ch:'encontro', text:'O Tiago passou uma semana inteira estudando para uma prova que nem era dele, só porque a Marina estava na mesma sala de estudos da república.' },
+    { who:'Tia Lúcia', rel:'tia da noiva', ch:'antes', text:'Mandei a foto da Marina com 6 anos, vestida de noiva para a festa junina de 1998. Ela já sabia o que queria.', photo:true },
+    { who:'Vó Cida', rel:'avó do noivo', ch:'conselhos', text:'Nunca durmam brigados. E quem cozinha não lava a louça.' },
+    { who:'Equipe do escritório', rel:'colegas do Tiago', ch:'encontro', text:'Contamos para todo mundo sobre a vez em que o Tiago errou o nome da Marina no primeiro encontro?', hint:'IA sinaliza: pode constranger em público' }
+  ];
+  let privateN = 0, capsuleN = 23;
+  const qEl = document.getElementById('queue'), chEl = document.getElementById('chapters');
+  function drawChapters(newText){
+    chEl.innerHTML = Object.values(chapters).map(c=>`<div class="chap"><h4>${c.t}</h4><ul>${c.items.length?c.items.map(it=>`<li class="${it===newText?'new':''}">${it}</li>`).join(''):'<li>Nenhuma lembrança publicada ainda.</li>'}</ul></div>`).join('');
+    document.getElementById('private-line').textContent = privateN ? `${privateN} ${privateN>1?'lembranças mantidas':'lembrança mantida'} só para os noivos.` : 'Lembranças privadas ficam visíveis só para os noivos.';
+    document.getElementById('cap-days').textContent = `${days(CAPSULE)} dias`;
+    document.getElementById('cap-count').textContent = `${capsuleN} mensagens lacradas até 14 de março de 2028.`;
+  }
+  function drawQueue(){
+    document.getElementById('q-count').textContent = queue.length ? `${queue.length} ${queue.length>1?'contribuições':'contribuição'}` : 'tudo revisado';
+    qEl.innerHTML = queue.length ? queue.map((q,i)=>`
+      <article class="card" data-i="${i}">
+        <div class="from"><span><strong>${q.who}</strong> · ${q.rel}</span>${q.photo?'<span class="mono">+ 1 foto</span>':''}</div>
+        <q>${q.text}</q>
+        <span class="sug">${q.hint ? q.hint : 'IA sugere o capítulo “'+chapters[q.ch].t+'”'}</span>
+        <div class="acts">
+          <button type="button" class="pri" data-a="pub">Publicar no capítulo</button>
+          <button type="button" data-a="priv">Manter privado</button>
+          <button type="button" data-a="cap">Guardar na cápsula</button>
+        </div>
+      </article>`).join('') : '<div class="empty">Tudo revisado. Novas lembranças aparecem aqui antes de qualquer convidado ver.</div>';
+  }
+  qEl.addEventListener('click', e=>{
+    const b = e.target.closest('button[data-a]'); if(!b) return;
+    const card = b.closest('.card'), i = +card.dataset.i, q = queue[i];
+    card.classList.add('out');
+    setTimeout(()=>{
+      let added;
+      if (b.dataset.a==='pub'){ added = `${q.text.length>90?q.text.slice(0,88).trim()+'…':q.text} — ${q.who}`; chapters[q.ch].items.push(added); }
+      else if (b.dataset.a==='priv') privateN++;
+      else capsuleN++;
+      queue.splice(i,1); drawQueue(); drawChapters(added);
+    }, 260);
+  });
+  drawQueue(); drawChapters();
+})();
+</script>

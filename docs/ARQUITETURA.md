@@ -6,7 +6,7 @@ O briefing prefere Django, Django REST Framework, PostgreSQL, Celery e Redis, e 
 
 - **Next.js 16 (App Router) + React 19 + TypeScript**: interface, rotas e ações do servidor.
 - **PostgreSQL no Neon**, acessado diretamente com o driver `pg`, sem ORM. As consultas ficam explícitas e parametrizadas.
-- **Claude (Anthropic SDK)** para o estúdio criativo e a organização das contribuições.
+- **IA por API compatível com a OpenAI** (padrão: Google Gemini 3.1 Flash-Lite, plano gratuito) para o estúdio criativo e a organização das contribuições.
 
 A separação lógica permite migrar o backend para Django sem reescrever a interface:
 
@@ -80,7 +80,12 @@ Migrações: `db/migrations/NNN_nome.sql`, aplicadas em ordem por `npm run db:mi
 
 ## IA
 
-- `lib/ai.ts`: modelo `claude-opus-5-5`, saída estruturada com Zod e `fallbacks: "default"` para recusas por política.
+- `lib/ai.ts` chama `chat/completions` de qualquer provedor compatível com a OpenAI (`AI_BASE_URL`, `AI_MODEL`, `AI_API_KEY`), sem SDK, com `fetch`. O padrão é o Google Gemini no plano gratuito; Groq e OpenRouter também funcionam.
+- Modelo padrão: `gemini-3.1-flash-lite`, que respondeu ao estúdio em cerca de 5 segundos nos testes, com raciocínio estendido desligado (`reasoning_effort: "none"`). O `gemini-2.5-flash` não está mais disponível para contas novas. Os modelos "flash" sem "lite" levaram de 60 a 100 segundos no plano gratuito, lentos demais para a tela de edição.
+- Quando o Google responde 503 (sobrecarga), o mesmo modelo é tentado de novo após 1,5 segundo. Se continuar indisponível, sem cota (429) ou retirado (404), o sistema passa para `AI_FALLBACK_MODELS` (padrão: `gemini-flash-latest`). Chave recusada (401 ou 403) não troca de modelo.
+- A resposta é pedida em JSON (`response_format: json_object`), com o JSON Schema gerado a partir do Zod e incluído nas instruções. Se a resposta vier fora do esquema, os erros voltam para o modelo e ele tem mais uma tentativa.
+- Imagens de referência vão como `data:` URL. Links são baixados no servidor só se forem `https`, apontarem para endereços públicos (bloqueio de IPs internos), não redirecionarem, forem imagem e tiverem até 4 MB.
+- Plano gratuito: limites de uso por projeto (HTTP 429 vira uma mensagem clara) e possível uso dos dados para treino pelo Google. `AI_CLASSIFY_CONTRIBUTIONS=false` impede que textos de convidados sejam enviados.
 - O estúdio devolve sempre duas propostas. `applyProposal` aplica uma delas respeitando as travas (cores, tipografia, composição, textos), e cada proposta aplicada vira uma versão restaurável.
 - Valores inválidos vindos da IA são descartados campo a campo.
 - O modo demonstrativo (`lib/studio-demo.ts`) não chama nenhum serviço e aparece na interface como simulado.

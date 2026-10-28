@@ -102,7 +102,7 @@ export default function StudioPanel({ api, weddingId, refs, initialMessages, aiE
       {!aiEnabled && (
         <p className="notice demo" role="note">
           <strong>Modo demonstrativo.</strong> A geração por IA está simulada: o estúdio entende comandos comuns e aplica mudanças
-          reais no design. Para usar a IA, configurem ANTHROPIC_API_KEY (veja o README).
+          reais no design. Para usar a IA, configurem AI_API_KEY com uma chave gratuita do Google Gemini (veja o README).
         </p>
       )}
 

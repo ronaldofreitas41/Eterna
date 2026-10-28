@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { AiRefusalError, StudioReference, generateStudioReply, isAiConfigured } from "@/lib/ai";
+import { AiError, StudioReference, generateStudioReply, isAiConfigured } from "@/lib/ai";
 import { getCurrentUser } from "@/lib/auth";
 import { one, query } from "@/lib/db";
 import { parseDesign } from "@/lib/design";
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
   const references: StudioReference[] = refs.flatMap((r): StudioReference[] => {
     if (r.url) return [{ kind: "url", note: r.note, url: r.url }];
-    if (r.data && r.mime) return [{ kind: "image", note: r.note, mediaType: r.mime as "image/jpeg", base64: r.data.toString("base64") }];
+    if (r.data && r.mime) return [{ kind: "image", note: r.note, mediaType: r.mime, base64: r.data.toString("base64") }];
     return [];
   });
 
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(result);
   } catch (err) {
-    if (err instanceof AiRefusalError) return NextResponse.json({ error: err.message }, { status: 422 });
+    if (err instanceof AiError) return NextResponse.json({ error: err.message }, { status: 502 });
     console.error("[estudio] falha na IA", err);
     return NextResponse.json({ error: "O estúdio não respondeu agora. Tentem de novo em instantes." }, { status: 502 });
   }

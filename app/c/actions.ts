@@ -1,6 +1,6 @@
 "use server";
 
-import { classifyContribution, isAiConfigured } from "@/lib/ai";
+import { classifyContribution, isContributionAiEnabled } from "@/lib/ai";
 import { guard, text, type Result } from "@/lib/action";
 import { one, query, tx } from "@/lib/db";
 import { saveFile } from "@/lib/files";
@@ -132,7 +132,7 @@ export async function submitContribution(form: FormData): Promise<Result> {
 
     // A IA só sugere o capítulo; nada é publicado sem os noivos. Mensagens da cápsula não são lidas por ninguém.
     let ai = { chapterId: null as string | null, note: "" };
-    if (kind !== "capsule" && isAiConfigured()) {
+    if (kind !== "capsule" && isContributionAiEnabled()) {
       const chapters = await query<{ id: string; title: string }>("select id, title from story_chapters where wedding_id = $1", [w.id]);
       if (chapters.length) {
         try {

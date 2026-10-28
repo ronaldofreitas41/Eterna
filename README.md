@@ -4,7 +4,7 @@ Plataforma de sites de casamento: os noivos criam a identidade visual com IA, os
 
 > A história de vocês, construída por todos.
 
-**Stack:** Next.js 16, React 19 e TypeScript, com PostgreSQL (Neon) acessado pelo driver `pg`. A IA usa Claude, da Anthropic.
+**Stack:** Next.js 16, React 19 e TypeScript, com PostgreSQL (Neon) acessado pelo driver `pg`. A IA usa o Google Gemini no plano gratuito, por uma API compatível com a da OpenAI, então dá para trocar de provedor.
 
 ## O que já funciona
 
@@ -30,7 +30,7 @@ Plataforma de sites de casamento: os noivos criam a identidade visual com IA, os
 
 ```bash
 npm install
-cp .env.example .env.local   # preencham DATABASE_URL (e, se quiserem, ANTHROPIC_API_KEY)
+cp .env.example .env.local   # preencham DATABASE_URL (e, se quiserem, AI_API_KEY)
 npm run db:migrate           # cria as tabelas (aplica db/migrations uma única vez cada)
 npm run dev                  # http://localhost:3000
 ```
@@ -39,7 +39,13 @@ Sem o `DATABASE_URL`, a landing, os planos e o site de exemplo funcionam, e a te
 
 ### IA (opcional)
 
-Com `ANTHROPIC_API_KEY` configurada, o estúdio usa o modelo `claude-opus-5-5`. A IA:
+A IA é gratuita: criem uma chave do Google Gemini em https://aistudio.google.com/apikey (não pede cartão) e coloquem em `AI_API_KEY`. O modelo padrão é o `gemini-3.1-flash-lite`. Para usar outro provedor gratuito compatível com a API da OpenAI (Groq, OpenRouter), mudem `AI_BASE_URL` e `AI_MODEL`; o `.env.example` tem os exemplos.
+
+Limites do plano gratuito do Gemini:
+- **Uso:** há um limite de pedidos por minuto e por dia, definido pelo Google para cada projeto e visível no AI Studio. Quando ele acaba, o estúdio avisa e pede para tentar mais tarde.
+- **Privacidade:** no plano gratuito, o Google pode usar o conteúdo enviado para melhorar os modelos. Para não enviar textos de convidados à IA, usem `AI_CLASSIFY_CONTRIBUTIONS=false`. A sugestão de capítulo fica desligada e o resto continua igual.
+
+Com a chave configurada, a IA:
 - gera duas propostas de design por pedido, a partir das referências e respeitando o que os noivos travaram;
 - sugere o capítulo de cada contribuição e avisa quando um texto pode constranger.
 

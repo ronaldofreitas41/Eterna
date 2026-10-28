@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import WeddingSite from "@/components/site/WeddingSite";
 import PhaseSwitch from "@/components/PhaseSwitch";
@@ -49,6 +49,31 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
   const [showVersions, setShowVersions] = useState(false);
 
   const dirty = !sameDesign(design, saved);
+  const [remote, setRemote] = useState<SiteDesign | null>(null);
+  const lastServer = useRef(initialDesign);
+
+  // Dados novos do servidor (alteração feita em outro aparelho ou aba, trazida pelo LiveSync).
+  useEffect(() => {
+    if (sameDesign(initialDesign, lastServer.current)) return;
+    lastServer.current = initialDesign;
+    if (sameDesign(initialDesign, saved)) return; // é o próprio salvamento desta tela
+    if (dirty) {
+      setRemote(initialDesign); // não sobrescreve o que está sendo editado aqui
+    } else {
+      setDesign(initialDesign);
+      setSaved(initialDesign);
+      setPast([]);
+      setFuture([]);
+      notify("O design foi atualizado com alterações feitas em outro aparelho.");
+    }
+    // Só reage a mudanças vindas do servidor.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialDesign]);
+  useEffect(() => setVersions(initialVersions), [initialVersions]);
+  useEffect(() => {
+    setPublished(wedding.published);
+    setPublishedId(wedding.published_version_id);
+  }, [wedding.published, wedding.published_version_id]);
   const publishedSnapshot = versions.find((v) => v.id === publishedId)?.snapshot;
   const differsFromPublished = published && publishedSnapshot !== undefined && !sameDesign(design, parseDesign(publishedSnapshot));
 
@@ -224,6 +249,27 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
           )}
         </div>
         <div className="ws-preview">
+          {remote && (
+            <div className="ws-override" role="alert">
+              <span>O rascunho foi alterado em outro aparelho enquanto vocês editavam aqui.</span>
+              <span className="row-actions">
+                <button
+                  type="button"
+                  className="text-link"
+                  onClick={() => {
+                    update(remote);
+                    setSaved(remote);
+                    setRemote(null);
+                  }}
+                >
+                  Carregar a versão do outro aparelho
+                </button>
+                <button type="button" className="text-link" onClick={() => setRemote(null)}>
+                  Manter as minhas alterações
+                </button>
+              </span>
+            </div>
+          )}
           {override && (
             <div className="ws-override" role="status">
               <span>
@@ -234,7 +280,7 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
               </button>
             </div>
           )}
-          <div className={`device device-${device}`}>
+          <div className={`device device-${device} preview-scroll`} tabIndex={0} aria-label="Prévia do site">
             <WeddingSite data={{ ...live, wedding, design: shown, invitation: null }} phase={phase} mode="preview" today={new Date()} />
           </div>
         </div>

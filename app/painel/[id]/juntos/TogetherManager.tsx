@@ -14,6 +14,7 @@ import {
 import { formatLongDate } from "@/lib/phase";
 import { KIND_LABELS, type Audience, type Campaign, type Chapter, type Contribution, type ContributionKind, type GuestGroup } from "@/lib/types";
 import ConfirmButton from "@/components/panel/ConfirmButton";
+import { useServerState } from "@/components/useServerState";
 
 type Item = Contribution & { photoUrl: string | null };
 type Props = {
@@ -33,9 +34,9 @@ const AUDIENCE: Record<Audience, string> = {
 const TABS = ["Aguardando", "Publicadas", "Privadas", "Campanhas", "Capítulos"] as const;
 
 export default function TogetherManager({ weddingId, initialContributions, initialChapters, initialCampaigns, groups, capsule }: Props) {
-  const [items, setItems] = useState(initialContributions);
-  const [chapters, setChapters] = useState(initialChapters);
-  const [campaigns, setCampaigns] = useState(initialCampaigns);
+  const [items, setItems] = useServerState(initialContributions);
+  const [chapters, setChapters] = useServerState(initialChapters);
+  const [campaigns, setCampaigns] = useServerState(initialCampaigns);
   const [tab, setTab] = useState<(typeof TABS)[number]>("Aguardando");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const say = (text: string, ok = true) => setMsg({ text, ok });

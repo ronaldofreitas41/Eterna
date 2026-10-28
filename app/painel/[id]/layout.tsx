@@ -1,6 +1,7 @@
 import { one } from "@/lib/db";
 import { getOwnedWedding } from "@/lib/panel";
 import PanelNav from "@/components/panel/PanelNav";
+import LiveSync from "@/components/LiveSync";
 
 export default async function WeddingPanelLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,6 +24,7 @@ export default async function WeddingPanelLayout({ children, params }: { childre
         pending={pending ?? { juntos: 0, fotos: 0 }}
       />
       <main className="panel-main">{children}</main>
+      <LiveSync weddingId={id} revision={wedding.revision} />
     </div>
   );
 }

@@ -129,7 +129,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
               Editar
             </Link>
           </div>
-          <div className="mini-preview" aria-hidden="true">
+          <div className="mini-preview preview-scroll" tabIndex={0} aria-label="Prévia do rascunho">
             <div className="mini-preview-inner">
               <WeddingSite data={{ ...live, wedding: publicWedding(wedding), design, invitation: null }} phase={phase} mode="preview" today={today} />
             </div>

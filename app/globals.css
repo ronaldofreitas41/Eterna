@@ -2870,3 +2870,154 @@ details.studio-block > summary {
 .ref-actions .mini-swatch {
   justify-self: start;
 }
+
+/* ---------- carregamento e erros ---------- */
+.loading-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 3px;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.loading-bar.on {
+  opacity: 1;
+}
+.loading-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--sage), var(--sage-deep));
+  transform-origin: left;
+  transition: transform 0.25s ease;
+  box-shadow: 0 0 8px rgba(75, 106, 80, 0.45);
+}
+.sk {
+  display: block;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--paper) 25%, var(--beige) 50%, var(--paper) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+.sk-line {
+  height: 14px;
+  width: min(420px, 80%);
+}
+.sk-line.short {
+  width: 120px;
+}
+.sk-title {
+  height: 40px;
+  width: min(360px, 70%);
+}
+.sk-title.center {
+  margin-inline: auto;
+}
+.sk-card {
+  height: 116px;
+  border-radius: var(--radius-lg);
+}
+.sk-block {
+  height: 380px;
+  border-radius: var(--radius-lg);
+}
+.skeleton-head {
+  display: grid;
+  gap: 12px;
+}
+.site-loading {
+  min-height: 70vh;
+  display: grid;
+  gap: 18px;
+  place-content: center;
+  justify-items: center;
+  padding: 40px 20px;
+  background: var(--ivory);
+}
+.error-state {
+  padding-block: 12vh;
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+  max-width: 620px;
+}
+
+/* ---------- prévias com rolagem própria (Antes, Durante e Depois) ---------- */
+/* As miniaturas usam zoom (e não transform) para a área de rolagem acompanhar o tamanho reduzido. */
+.preview-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sage) transparent;
+}
+.preview-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.preview-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.preview-scroll::-webkit-scrollbar-thumb {
+  background: var(--sage);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.preview-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--sage-deep);
+  background-clip: padding-box;
+}
+
+/* Editor e estúdio: o quadro do aparelho rola sozinho. */
+.ws-preview .device {
+  max-height: calc(100vh - 150px);
+}
+.ws-preview .device-mobile {
+  height: min(760px, calc(100vh - 150px));
+}
+
+/* Página inicial: miniaturas roláveis. */
+.l-scale {
+  transform: none !important;
+  pointer-events: auto;
+}
+.l-scale.desktop {
+  zoom: 0.56;
+}
+.l-scale.phone {
+  zoom: 0.354;
+}
+.l-screen.preview-scroll {
+  overflow-x: hidden;
+}
+
+/* Visão geral do painel: prévia rolável. */
+.mini-preview-inner {
+  transform: none;
+  zoom: 0.5;
+  pointer-events: auto;
+}
+
+@media (max-width: 960px) {
+  .ws-preview .device {
+    max-height: 80vh;
+  }
+  .ws-preview .device-mobile {
+    height: min(720px, 80vh);
+  }
+}
+@media (max-width: 640px) {
+  .l-scale.desktop {
+    zoom: 0.32;
+  }
+  .l-scale.phone {
+    zoom: 0.24;
+  }
+}

@@ -4,15 +4,16 @@ import { useMemo, useState } from "react";
 import { createGroup, createGuest, deleteGroup, deleteGuest, deleteRsvp, regenerateInvite, setGuestGroup, updateGroup } from "@/app/painel/acoes/convidados";
 import type { Guest, GuestGroup, Rsvp } from "@/lib/types";
 import ConfirmButton from "@/components/panel/ConfirmButton";
+import { useServerState } from "@/components/useServerState";
 
 type Props = { weddingId: string; slug: string; initialGroups: GuestGroup[]; initialGuests: Guest[]; initialRsvps: Rsvp[] };
 
 const status = (g: Guest) => (g.attending === null ? "Aguardando" : g.attending ? `Vai · ${g.party_size} pessoa(s)` : "Não vai");
 
 export default function GuestsManager({ weddingId, slug, initialGroups, initialGuests, initialRsvps }: Props) {
-  const [groups, setGroups] = useState(initialGroups);
-  const [guests, setGuests] = useState(initialGuests);
-  const [rsvps, setRsvps] = useState(initialRsvps);
+  const [groups, setGroups] = useServerState(initialGroups);
+  const [guests, setGuests] = useServerState(initialGuests);
+  const [rsvps, setRsvps] = useServerState(initialRsvps);
   const [filter, setFilter] = useState<string>("todos");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const say = (text: string, ok = true) => setMsg({ text, ok });

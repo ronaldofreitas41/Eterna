@@ -52,6 +52,8 @@ export type SiteData = {
   campaigns: SiteCampaign[];
   capsule: CapsuleSummary | null;
   invitation: (Invitation & { token: string }) | null;
+  /** Número de revisão para a sincronização entre aparelhos (opcional nas prévias). */
+  revision?: number;
 };
 
 export function toEntry(c: Contribution): SiteEntry {
@@ -175,6 +177,7 @@ export async function loadPublicSite(slug: string, token: string | null): Promis
     wedding: publicWedding(wedding),
     design: parseDesign(version?.snapshot),
     invitation: invitation ? { ...invitation, token: token! } : null,
+    revision: wedding.revision,
   };
 }
 

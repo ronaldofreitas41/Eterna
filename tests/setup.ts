@@ -7,3 +7,6 @@ if (existsSync(".env.local")) {
     if (m && m[2] && !process.env[m[1]]) process.env[m[1]] = m[2];
   }
 }
+
+// Os testes de integração não devem enviar textos ao provedor de IA (nem gastar a cota gratuita).
+process.env.AI_CLASSIFY_CONTRIBUTIONS = "false";

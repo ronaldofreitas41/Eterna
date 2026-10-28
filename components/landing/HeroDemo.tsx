@@ -24,14 +24,14 @@ export default function HeroDemo({ data }: { data: SiteData }) {
             <i />
             <span>eterna.com.br/c/helena-e-rafael</span>
           </div>
-          <div className="l-screen">
+          <div className="l-screen preview-scroll">
             <div className="l-scale desktop">
               <WeddingSite data={site} phase="antes" mode="demo" today={TODAY} />
             </div>
           </div>
         </div>
         <div className="l-phone">
-          <div className="l-screen">
+          <div className="l-screen preview-scroll">
             <div className="l-scale phone">
               <WeddingSite data={site} phase="durante" mode="demo" today={new Date(2027, 4, 15)} />
             </div>

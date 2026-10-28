@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import WeddingSite from "@/components/site/WeddingSite";
+import LiveSync from "@/components/LiveSync";
 import { isDatabaseConfigured, one } from "@/lib/db";
 import { formatLongDate, resolvePhase } from "@/lib/phase";
 import { loadPublicSite } from "@/lib/site";
@@ -33,6 +34,7 @@ export default async function PublicWeddingPage({ params, searchParams }: Props)
     <main className="public-site">
       {data.wedding.is_demo && <p className="demo-ribbon">Casamento de demonstração · dados fictícios</p>}
       <WeddingSite data={data} phase={resolvePhase(data.wedding.phase, data.wedding.wedding_date, today)} mode="live" today={today} />
+      <LiveSync weddingId={data.wedding.id} revision={data.revision ?? 0} intervalMs={15000} />
     </main>
   );
 }

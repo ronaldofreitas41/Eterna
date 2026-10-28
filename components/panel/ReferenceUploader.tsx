@@ -6,6 +6,7 @@ import { extractPalette } from "@/lib/palette-extract";
 import type { ReferencePalette } from "@/lib/studio";
 import type { Palette } from "@/lib/theme";
 import { prepareImage } from "@/components/site/upload";
+import { useServerState } from "@/components/useServerState";
 
 export type { RefView };
 
@@ -19,7 +20,7 @@ type Props = {
 const MAX_REFS = 8;
 
 export default function ReferenceUploader({ weddingId, initial, onPalettes, onUsePalette }: Props) {
-  const [refs, setRefs] = useState(initial);
+  const [refs, setRefs] = useServerState(initial);
   const [palettes, setPalettes] = useState<Record<string, Palette | null>>({});
   const [busy, setBusy] = useState(false);
   const [urlInput, setUrlInput] = useState("");

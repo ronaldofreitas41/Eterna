@@ -43,6 +43,13 @@ export default function StudioPanel({ api, weddingId, refs, initialMessages, aiE
 
   useEffect(() => endRef.current?.scrollIntoView({ block: "nearest" }), [messages.length]);
 
+  // Conversa atualizada no servidor (outro aparelho): substitui a lista, exceto durante um pedido em andamento.
+  useEffect(() => {
+    if (busy) return;
+    setMessages(initialMessages.map((m) => ({ ...m, proposals: parseProposals(m.proposals, api.design.theme) })));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMessages]);
+
   async function persist(rows: Omit<Msg, "id">[]) {
     const res = await addStudioMessages(weddingId, rows);
     if (!res.ok) api.notify("A conversa não foi salva no histórico, mas as propostas continuam aqui.", false);

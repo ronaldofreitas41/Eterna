@@ -4,9 +4,10 @@ import { useState } from "react";
 import { addTask, deleteTask, setTaskDone } from "@/app/painel/acoes/tarefas";
 import { formatLongDate } from "@/lib/phase";
 import type { Task } from "@/lib/types";
+import { useServerState } from "@/components/useServerState";
 
 export default function TaskList({ weddingId, initial }: { weddingId: string; initial: Task[] }) {
-  const [tasks, setTasks] = useState(initial);
+  const [tasks, setTasks] = useServerState(initial);
   const [title, setTitle] = useState("");
   const [due, setDue] = useState("");
   const [error, setError] = useState("");

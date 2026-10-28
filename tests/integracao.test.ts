@@ -101,6 +101,29 @@ run("integração com o PostgreSQL", async () => {
     });
   });
 
+  it("sincronização: cada alteração sobe a revisão, e só o dono consulta a de um site não publicado", async () => {
+    const { GET } = await import("@/app/api/revisao/[id]/route");
+    const rev = async () => (await one<{ revision: number }>("select revision from weddings where id = $1", [weddingA]))!.revision;
+    const ask = async () => GET(new Request("http://x"), { params: Promise.resolve({ id: weddingA }) });
+
+    as("a");
+    const before = await rev();
+    const r = await ask();
+    expect(r.status).toBe(200);
+    expect((await r.json()).revision).toBe(before);
+
+    // Alteração "no celular": um convidado novo.
+    expect((await guests.createGuest(weddingA, { name: "Primo", contact: "", group_id: null })).ok).toBe(true);
+    const after = await rev();
+    expect(after).toBeGreaterThan(before);
+    expect((await (await ask()).json()).revision).toBe(after);
+
+    as("b");
+    expect((await ask()).status).toBe(404); // outro casal não vê
+    as("anon");
+    expect((await ask()).status).toBe(404); // visitante não vê site não publicado
+  });
+
   it("visitante sem sessão não usa ações do painel", async () => {
     as("anon");
     expect(await guests.createGuest(weddingA, { name: "x", contact: "", group_id: null })).toEqual({

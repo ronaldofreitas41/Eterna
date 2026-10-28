@@ -8,6 +8,7 @@ import { PHASE_NAMES } from "@/lib/phase";
 import { PLANS } from "@/lib/plans";
 import type { PhaseSetting, SitePhase, Wedding } from "@/lib/types";
 import { deleteWedding } from "../../actions";
+import { useServerState } from "@/components/useServerState";
 
 type Props = { wedding: Wedding; autoPhase: SitePhase; publicUrl: string; qrSvg: string };
 
@@ -20,7 +21,7 @@ const PHASE_OPTIONS: { id: PhaseSetting; label: string; hint: string }[] = [
 
 export default function SettingsManager({ wedding, autoPhase, publicUrl, qrSvg }: Props) {
   const router = useRouter();
-  const [w, setW] = useState(wedding);
+  const [w, setW] = useServerState(wedding);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [confirm, setConfirm] = useState("");
   const [deleting, startDelete] = useTransition();

@@ -11,6 +11,7 @@ import {
   Pinyon_Script,
 } from "next/font/google";
 import "./globals.css";
+import LoadingBar from "@/components/LoadingBar";
 
 // Bodoni e Instrument Sans são a identidade da Eterna; as demais servem aos sites dos casais.
 const display = Bodoni_Moda({ subsets: ["latin"], style: ["normal", "italic"], axes: ["opsz"], variable: "--font-display" });
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={fonts}>
       <body>
+        <LoadingBar />
         <a href="#conteudo" className="skip-link">
           Pular para o conteúdo
         </a>

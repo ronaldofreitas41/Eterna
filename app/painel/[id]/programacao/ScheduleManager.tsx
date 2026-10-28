@@ -5,6 +5,7 @@ import { addScheduleItem, deleteScheduleItem, saveLogistics, updateScheduleItem 
 import { formatLongDate } from "@/lib/phase";
 import type { Logistics, ScheduleItem } from "@/lib/types";
 import ConfirmButton from "@/components/panel/ConfirmButton";
+import { useServerState } from "@/components/useServerState";
 
 type Props = {
   weddingId: string;
@@ -18,9 +19,9 @@ const sortItems = (list: ScheduleItem[]) =>
   [...list].sort((a, b) => (a.day ?? "").localeCompare(b.day ?? "") || a.starts_at.localeCompare(b.starts_at));
 
 export default function ScheduleManager({ weddingId, weddingDate, initialItems, initialLogistics, initialPublic }: Props) {
-  const [items, setItems] = useState(initialItems);
-  const [logistics, setLogistics] = useState(initialLogistics);
-  const [isPublic, setIsPublic] = useState(initialPublic);
+  const [items, setItems] = useServerState(initialItems);
+  const [logistics, setLogistics] = useServerState(initialLogistics);
+  const [isPublic, setIsPublic] = useServerState(initialPublic);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const say = (text: string, ok = true) => setMsg({ text, ok });
 

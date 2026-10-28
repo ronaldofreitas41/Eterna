@@ -3,6 +3,8 @@ import { Pool, types, type PoolClient, type QueryResultRow } from "pg";
 
 // Datas e horários chegam como texto (ISO), como o resto da aplicação espera; date fica "AAAA-MM-DD", sem fuso.
 for (const oid of [1082, 1114, 1184]) types.setTypeParser(oid, (v: string) => (oid === 1082 ? v : new Date(v).toISOString()));
+// bigint (revisão e contagens) como número; os valores usados aqui ficam muito abaixo de 2^53.
+types.setTypeParser(20, (v: string) => Number(v));
 
 // Conexão única com o PostgreSQL (Neon). Reaproveitada entre recarregamentos no modo de desenvolvimento.
 const globalForDb = globalThis as unknown as { eternaPool?: Pool };

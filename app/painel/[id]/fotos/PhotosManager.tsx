@@ -5,13 +5,14 @@ import { deletePhoto, removeCover, setPhotoStatus, uploadCover } from "@/app/pai
 import type { Photo } from "@/lib/types";
 import { prepareImage } from "@/components/site/upload";
 import ConfirmButton from "@/components/panel/ConfirmButton";
+import { useServerState } from "@/components/useServerState";
 
 type Item = Photo & { url: string | null };
 type Props = { weddingId: string; initialPhotos: Item[]; initialCover: string | null };
 
 export default function PhotosManager({ weddingId, initialPhotos, initialCover }: Props) {
-  const [photos, setPhotos] = useState(initialPhotos);
-  const [cover, setCover] = useState(initialCover);
+  const [photos, setPhotos] = useServerState(initialPhotos);
+  const [cover, setCover] = useServerState(initialCover);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const say = (text: string, ok = true) => setMsg({ text, ok });

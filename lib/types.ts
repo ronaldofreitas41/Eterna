@@ -27,6 +27,7 @@ export type Wedding = {
   logistics_public: boolean;
   cover_file_id: string | null;
   onboarding_done: boolean;
+  revision: number;
   created_at: string;
   updated_at: string;
 };

@@ -56,7 +56,7 @@ export default async function InicioPage({ params }: { params: Promise<{ id: str
         : !design.content.story && !design.content.tagline
           ? { title: "Contem um pouco da história de vocês", text: "Uma frase de abertura e alguns parágrafos já deixam o site com a cara de vocês.", href: `${base}/site?aba=textos`, cta: "Escrever a história" }
           : !wedding.wedding_date
-            ? { title: "Definam a data do casamento", text: "Com a data, o site mostra a contagem regressiva e muda sozinho no grande dia.", href: `${base}/configuracoes`, cta: "Informar a data" }
+            ? { title: "Definam a data do casamento", text: "Com a data, o site mostra a contagem regressiva e muda sozinho no grande dia.", href: `${base}/site?aba=textos`, cta: "Informar a data" }
             : !wedding.published
               ? { title: "Publiquem o site", text: "Quando estiverem satisfeitos, publiquem para os convidados poderem ver e confirmar presença.", href: `${base}/site`, cta: "Revisar e publicar" }
               : answers === 0

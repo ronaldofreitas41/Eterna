@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-// Campos que só registram a alteração ao sair do campo, para o "desfazer" voltar uma edição inteira e não uma letra.
+// Campos de texto do editor. Por padrão, cada letra já aparece na prévia (o "desfazer" agrupa a digitação).
+// Com live={false}, a alteração só é registrada ao sair do campo (para valores que precisam ser interpretados, como preços).
 
 type TextProps = {
   id: string;
@@ -15,19 +16,24 @@ type TextProps = {
   placeholder?: string;
   hint?: string;
   type?: string;
+  live?: boolean;
 };
 
-export function TextField({ id, label, value, onCommit, maxLength, multiline, rows = 4, placeholder, hint, type = "text" }: TextProps) {
+export function TextField({ id, label, value, onCommit, maxLength, multiline, rows = 4, placeholder, hint, type = "text", live = true }: TextProps) {
   const [local, setLocal] = useState(value);
   useEffect(() => {
     setLocal(value);
   }, [value]);
   const commit = () => local !== value && onCommit(local);
+  const change = (v: string) => {
+    setLocal(v);
+    if (live) onCommit(v);
+  };
   return (
     <label className="field">
       <span>{label}</span>
       {multiline ? (
-        <textarea id={id} rows={rows} maxLength={maxLength} value={local} placeholder={placeholder} onChange={(e) => setLocal(e.target.value)} onBlur={commit} />
+        <textarea id={id} rows={rows} maxLength={maxLength} value={local} placeholder={placeholder} onChange={(e) => change(e.target.value)} onBlur={commit} />
       ) : (
         <input
           id={id}
@@ -35,7 +41,7 @@ export function TextField({ id, label, value, onCommit, maxLength, multiline, ro
           maxLength={maxLength}
           value={local}
           placeholder={placeholder}
-          onChange={(e) => setLocal(e.target.value)}
+          onChange={(e) => change(e.target.value)}
           onBlur={commit}
           onKeyDown={(e) => e.key === "Enter" && commit()}
         />
@@ -69,6 +75,19 @@ export function SelectField<T extends string>({
         ))}
       </select>
     </label>
+  );
+}
+
+/** Grupo recolhível do editor: o essencial aberto, o resto à mão sem ocupar a tela. */
+export function Fold({ title, hint, open, children }: { title: string; hint?: string; open?: boolean; children: React.ReactNode }) {
+  return (
+    <details className="fold" open={open}>
+      <summary>
+        <strong>{title}</strong>
+        {hint && <span className="muted small">{hint}</span>}
+      </summary>
+      <div className="stack">{children}</div>
+    </details>
   );
 }
 

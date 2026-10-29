@@ -3369,3 +3369,84 @@ details.studio-block > summary {
   font-size: 1.4rem;
   font-weight: 600;
 }
+
+/* Editor em grupos recolhíveis: o essencial aberto, o resto à mão. */
+.fold {
+  border: 1px solid var(--beige);
+  border-radius: var(--radius);
+  background: var(--white);
+}
+.fold > summary {
+  display: grid;
+  gap: 2px;
+  padding: 14px 44px 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  position: relative;
+  min-height: 44px;
+}
+.fold > summary::-webkit-details-marker {
+  display: none;
+}
+.fold > summary::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid var(--ink-2);
+  border-bottom: 1.5px solid var(--ink-2);
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 0.2s var(--ease);
+}
+.fold[open] > summary::after {
+  transform: translateY(-30%) rotate(-135deg);
+}
+.fold > summary strong {
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+.fold > summary:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+.fold > .stack {
+  padding: 0 16px 16px;
+}
+
+/* Menu "Mais": como o site fica em cada momento. */
+.more-menu-label {
+  padding: 8px 12px 4px;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.more-menu-list > hr {
+  border: 0;
+  border-top: 1px solid var(--beige);
+  margin: 6px 0;
+}
+.more-menu-list > button[aria-pressed="true"] {
+  background: var(--sage-tint);
+  color: var(--sage-deep);
+  font-weight: 600;
+}
+
+/* Altura real da tela no celular (100vh inclui a barra do navegador). */
+@supports (height: 100dvh) {
+  .workspace {
+    height: 100dvh;
+  }
+}
+@media (max-width: 960px) {
+  .workspace {
+    height: auto;
+  }
+  /* No celular, a prévia já é do tamanho do celular: o seletor de aparelho só ocupa espaço. */
+  .ws-view {
+    display: none;
+  }
+}

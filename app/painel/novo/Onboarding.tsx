@@ -3,12 +3,12 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import WeddingSite from "@/components/site/WeddingSite";
-import ReferenceUploader from "@/components/panel/ReferenceUploader";
+import ReferenceUploader, { type RefView } from "@/components/panel/ReferenceUploader";
 import { generateFirstVersion, saveDream, type FirstVersion } from "../acoes/criar";
+import { updateSettings } from "../acoes/configuracoes";
 import { saveDraft } from "../acoes/design";
 import { startWedding, type StartInput } from "../actions";
 import { DEFAULT_DESIGN, type SiteDesign } from "@/lib/design";
-import { PRESETS } from "@/lib/presets";
 import type { SiteData } from "@/lib/site";
 import { applyProposal, type Proposal } from "@/lib/studio";
 
@@ -25,17 +25,27 @@ const IDEAS = [
 
 type Generated = FirstVersion & { index: number };
 
-export default function Onboarding() {
+/** Criação já começada (a página foi recarregada no meio do caminho). */
+export type Resume = { id: string; info: Omit<StartInput, "presetId" | "gifts">; dream: string; refs: RefView[] };
+
+export default function Onboarding({ resume }: { resume?: Resume }) {
   const router = useRouter();
-  const [step, setStep] = useState(0);
-  const [info, setInfo] = useState<StartInput>({ partnerOne: "", partnerTwo: "", date: null, venue: "", city: "", presetId: "botanico", gifts: true });
-  const [dream, setDream] = useState("");
-  const [weddingId, setWeddingId] = useState<string | null>(null);
+  const [step, setStep] = useState(resume ? 1 : 0);
+  // O estilo nasce da descrição na etapa seguinte; o botânico (verde-sálvia) é só o ponto de partida.
+  const [info, setInfo] = useState<StartInput>({
+    ...(resume?.info ?? { partnerOne: "", partnerTwo: "", date: null, venue: "", city: "" }),
+    presetId: "botanico",
+    gifts: true,
+  });
+  const [dream, setDream] = useState(resume?.dream ?? "");
+  const [weddingId, setWeddingId] = useState<string | null>(resume?.id ?? null);
   const [design, setDesign] = useState<SiteDesign>(DEFAULT_DESIGN);
   const [generated, setGenerated] = useState<Generated | null>(null);
   const [seen, setSeen] = useState<string[]>([]);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [error, setError] = useState("");
+  // Lista estável: o ReferenceUploader recomeça a partir dela sempre que ela muda.
+  const [initialRefs] = useState<RefView[]>(resume?.refs ?? []);
   const [pending, start] = useTransition();
   const set = <K extends keyof StartInput>(k: K, v: StartInput[K]) => setInfo((d) => ({ ...d, [k]: v }));
 
@@ -47,6 +57,18 @@ export default function Onboarding() {
         const res = await startWedding(info);
         if (res.error || !res.id) return setError(res.error ?? "Não foi possível começar agora.");
         setWeddingId(res.id);
+        // Guarda o casamento no endereço: recarregar a página continua daqui, sem criar outro.
+        router.replace(`/painel/novo?casamento=${res.id}`, { scroll: false });
+      } else {
+        // Voltaram para corrigir os dados: salva o que mudou.
+        const res = await updateSettings(weddingId, {
+          partner_one: info.partnerOne,
+          partner_two: info.partnerTwo,
+          wedding_date: info.date,
+          venue: info.venue,
+          city: info.city,
+        });
+        if (!res.ok) return setError(res.error);
       }
       setStep(1);
     });
@@ -148,36 +170,20 @@ export default function Onboarding() {
               <input id="onb-p2" value={info.partnerTwo} onChange={(e) => set("partnerTwo", e.target.value)} maxLength={80} autoComplete="off" />
             </label>
           </div>
+          <label className="field">
+            <span>Data do casamento (se já tiverem)</span>
+            <input id="onb-date" type="date" value={info.date ?? ""} onChange={(e) => set("date", e.target.value || null)} />
+          </label>
           <div className="row2">
             <label className="field">
-              <span>Data do casamento (se já tiverem)</span>
-              <input id="onb-date" type="date" value={info.date ?? ""} onChange={(e) => set("date", e.target.value || null)} />
+              <span>Local (opcional)</span>
+              <input id="onb-venue" value={info.venue} onChange={(e) => set("venue", e.target.value)} maxLength={160} placeholder="Ex.: Fazenda das Oliveiras" />
             </label>
             <label className="field">
-              <span>Local (opcional)</span>
-              <input id="onb-venue" value={info.venue} onChange={(e) => set("venue", e.target.value)} maxLength={160} placeholder="Ex.: Fazenda das Oliveiras, Itu" />
+              <span>Cidade (opcional)</span>
+              <input id="onb-city" value={info.city} onChange={(e) => set("city", e.target.value)} maxLength={120} placeholder="Ex.: Itu, SP" />
             </label>
           </div>
-          <fieldset className="field">
-            <legend>Qual estilo combina mais com vocês?</legend>
-            <div className="preset-grid">
-              {PRESETS.map((p) => (
-                <button type="button" key={p.id} className="preset" aria-pressed={info.presetId === p.id} onClick={() => set("presetId", p.id)}>
-                  <span className="preset-swatch" style={{ background: p.theme.palette.background }}>
-                    {[p.theme.palette.ink, p.theme.palette.accent, p.theme.palette.surface].map((c) => (
-                      <i key={c} style={{ background: c }} />
-                    ))}
-                  </span>
-                  <strong>{p.name}</strong>
-                  <span>{p.description}</span>
-                </button>
-              ))}
-            </div>
-          </fieldset>
-          <label className="check">
-            <input id="onb-gifts" type="checkbox" checked={info.gifts} onChange={(e) => set("gifts", e.target.checked)} />
-            <span>Queremos uma lista de presentes no site</span>
-          </label>
           {error && (
             <p className="notice" role="alert">
               {error}
@@ -217,7 +223,7 @@ export default function Onboarding() {
           </div>
           <details className="onb-refs">
             <summary>Enviar imagens de referência (opcional)</summary>
-            <ReferenceUploader weddingId={weddingId} initial={[]} />
+            <ReferenceUploader weddingId={weddingId} initial={initialRefs} />
           </details>
           {error && (
             <p className="notice" role="alert">

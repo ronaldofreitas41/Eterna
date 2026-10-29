@@ -184,7 +184,7 @@ export default function SettingsManager({ wedding, autoPhase, publicUrl, qrSvg }
         <h2>Privacidade e dados</h2>
         <p className="muted small">
           Vocês podem baixar todos os dados do casamento a qualquer momento. Convidados podem pedir a remoção de uma contribuição ou foto:
-          basta excluí-la em Construir Juntos ou Fotos.
+          basta excluí-la em Memórias.
         </p>
         <a className="btn ghost small" href={`/api/exportar/${w.id}`} download>
           Exportar dados (JSON)

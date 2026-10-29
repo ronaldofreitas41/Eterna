@@ -41,14 +41,15 @@ export default function SitePanel({ api, weddingId, refs, messages, aiEnabled, c
       </div>
       {tab === "pedir" && <StudioPanel api={api} weddingId={weddingId} refs={refs} initialMessages={messages} aiEnabled={aiEnabled} />}
       {tab === "textos" && (
-        <>
-          <EditorPanel api={api} only="Textos" />
-          <div className="side-panel pt0">
+        <EditorPanel
+          api={api}
+          only="Textos"
+          extras={
             <Link href={`/painel/${weddingId}/programacao`} className="btn ghost small">
-              Programação, endereço e hospedagem
+              Programação, endereço completo e hospedagem
             </Link>
-          </div>
-        </>
+          }
+        />
       )}
       {tab === "aparencia" && (
         <>

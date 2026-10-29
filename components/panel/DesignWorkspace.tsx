@@ -3,18 +3,31 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import WeddingSite from "@/components/site/WeddingSite";
-import PhaseSwitch from "@/components/PhaseSwitch";
 import { SiteDesign, parseDesign, sameDesign } from "@/lib/design";
-import { resolvePhase } from "@/lib/phase";
+import { PHASE_NAMES, resolvePhase } from "@/lib/phase";
 import type { SiteData } from "@/lib/site";
+import { updateSettings } from "@/app/painel/acoes/configuracoes";
 import { publishSite, saveDraft, saveVersion as saveVersionAction, unpublishSite, type VersionRow } from "@/app/painel/acoes/design";
 import type { SitePhase, Wedding } from "@/lib/types";
 import VersionsPanel from "./VersionsPanel";
 
 export type { VersionRow };
 
+/** Dados do casamento editáveis junto com o site (vão direto para o casamento, sem precisar publicar). */
+export type WeddingInfo = Pick<Wedding, "partner_one" | "partner_two" | "wedding_date" | "venue" | "city">;
+const pickInfo = (w: WeddingInfo): WeddingInfo => ({
+  partner_one: w.partner_one,
+  partner_two: w.partner_two,
+  wedding_date: w.wedding_date,
+  venue: w.venue,
+  city: w.city,
+});
+const sameInfo = (a: WeddingInfo, b: WeddingInfo) => JSON.stringify(pickInfo(a)) === JSON.stringify(pickInfo(b));
+
 export type WorkspaceApi = {
   design: SiteDesign;
+  info: WeddingInfo;
+  setInfo: (patch: Partial<WeddingInfo>) => void;
   update: (next: SiteDesign | ((d: SiteDesign) => SiteDesign)) => void;
   undo: () => boolean;
   preview: (design: SiteDesign | null, label?: string) => void;
@@ -31,6 +44,8 @@ type Props = {
 };
 
 const HISTORY_LIMIT = 50;
+// Alterações seguidas com menos que isso de intervalo (a digitação de um texto) viram um único passo do "desfazer".
+const TYPING_MERGE_MS = 900;
 
 export default function DesignWorkspace({ wedding, initialDesign, initialVersions, live, children }: Props) {
   const router = useRouter();
@@ -45,13 +60,20 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   // No celular, uma coisa por vez: editar ou ver o site.
   const [pane, setPane] = useState<"editar" | "previa">("editar");
-  const [phase, setPhase] = useState<SitePhase>(() => resolvePhase(wedding.phase, wedding.wedding_date));
+  const naturalPhase = resolvePhase(wedding.phase, wedding.wedding_date);
+  const [phase, setPhase] = useState<SitePhase>(naturalPhase);
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [showVersions, setShowVersions] = useState(false);
   const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
   // Rascunhos salvos por esta tela: quando o servidor devolve um deles, não é alteração de outro aparelho.
   const ownSaves = useRef<string[]>([JSON.stringify(initialDesign)]);
+  const lastEdit = useRef(0);
+  const [info, setInfoState] = useState<WeddingInfo>(() => pickInfo(wedding));
+  const [savedInfo, setSavedInfo] = useState<WeddingInfo>(() => pickInfo(wedding));
+  const [infoSaving, setInfoSaving] = useState(false);
+  const infoDirty = !sameInfo(info, savedInfo);
+  const namesMissing = !info.partner_one.trim() || !info.partner_two.trim();
 
   const dirty = !sameDesign(design, saved);
   const [remote, setRemote] = useState<SiteDesign | null>(null);
@@ -94,7 +116,9 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
       const value = typeof next === "function" ? next(design) : next;
       setOverride(null);
       if (sameDesign(value, design)) return;
-      setPast((p) => [...p.slice(-HISTORY_LIMIT + 1), design]);
+      const now = Date.now();
+      if (now - lastEdit.current > TYPING_MERGE_MS) setPast((p) => [...p.slice(-HISTORY_LIMIT + 1), design]);
+      lastEdit.current = now;
       setFuture([]);
       setDesign(value);
     },
@@ -103,6 +127,7 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
 
   const undo = useCallback(() => {
     if (!past.length) return false;
+    lastEdit.current = 0;
     setFuture((f) => [design, ...f]);
     setDesign(past[past.length - 1]);
     setPast((p) => p.slice(0, -1));
@@ -111,6 +136,7 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
 
   const redo = useCallback(() => {
     if (!future.length) return;
+    lastEdit.current = 0;
     setPast((p) => [...p, design]);
     setDesign(future[0]);
     setFuture((f) => f.slice(1));
@@ -131,11 +157,11 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
   }, [undo, redo]);
 
   useEffect(() => {
-    if (!dirty) return;
+    if (!dirty && !infoDirty) return;
     const warn = (e: BeforeUnloadEvent) => e.preventDefault();
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  }, [dirty, infoDirty]);
 
   // Salvamento automático do rascunho, um instante depois da última alteração.
   async function persist(snapshot: SiteDesign) {
@@ -153,6 +179,29 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
     // persist muda a cada render; o que importa é o design.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [design, dirty, remote]);
+
+  // Dados do casamento: salvos sozinhos, como o rascunho. Mudanças vindas de outro aparelho só entram se nada estiver pendente aqui.
+  useEffect(() => {
+    const server = pickInfo(wedding);
+    if (sameInfo(server, savedInfo)) return;
+    if (!infoDirty) setInfoState(server);
+    setSavedInfo(server);
+    // Só reage a mudanças vindas do servidor.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wedding.partner_one, wedding.partner_two, wedding.wedding_date, wedding.venue, wedding.city]);
+  useEffect(() => {
+    if (!infoDirty || namesMissing) return;
+    const snapshot = info;
+    const t = window.setTimeout(async () => {
+      setInfoSaving(true);
+      const res = await updateSettings(wedding.id, snapshot);
+      setInfoSaving(false);
+      if (!res.ok) return notify(res.error, false);
+      setSavedInfo(snapshot);
+    }, 1000);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [info]);
 
   async function share() {
     const link = `${location.origin}/c/${wedding.slug}`;
@@ -206,6 +255,8 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
 
   const api: WorkspaceApi = {
     design,
+    info,
+    setInfo: (patch) => setInfoState((i) => ({ ...i, ...patch })),
     update,
     undo,
     preview: (d, label = "Proposta") => {
@@ -237,7 +288,7 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
             Refazer
           </button>
         </div>
-        <div className="ws-group">
+        <div className="ws-group ws-view">
           <div className="seg" role="group" aria-label="Ver no">
             <button type="button" aria-pressed={device === "desktop"} onClick={() => setDevice("desktop")}>
               Computador
@@ -246,7 +297,6 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
               Celular
             </button>
           </div>
-          <PhaseSwitch value={phase} onChange={setPhase} />
         </div>
         <div className="ws-group">
           <span className={`ws-status ${saveState === "error" ? "dirty" : ""}`} aria-live="polite">
@@ -254,7 +304,9 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
               <button type="button" className="text-link danger small" onClick={() => persist(design)}>
                 Não foi possível salvar. Tentar de novo
               </button>
-            ) : saveState === "saving" || dirty ? (
+            ) : namesMissing ? (
+              "Escrevam os dois nomes para salvar"
+            ) : saveState === "saving" || dirty || infoDirty || infoSaving ? (
               "Salvando…"
             ) : differsFromPublished ? (
               "Salvo · mudanças ainda não publicadas"
@@ -273,6 +325,14 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
           <details className="more-menu">
             <summary className="btn ghost small">Mais</summary>
             <div className="more-menu-list">
+              <span className="more-menu-label">Ver como o site fica</span>
+              {(Object.keys(PHASE_NAMES) as SitePhase[]).map((p) => (
+                <button key={p} type="button" aria-pressed={phase === p} onClick={() => setPhase(p)}>
+                  {p === "antes" ? "Antes do casamento" : p === "durante" ? "No dia do casamento" : "Depois do casamento"}
+                  {p === naturalPhase && <small className="muted"> · hoje</small>}
+                </button>
+              ))}
+              <hr />
               <button type="button" onClick={() => setShowVersions((v) => !v)}>
                 {showVersions ? "Fechar versões" : "Versões anteriores"}
               </button>
@@ -329,6 +389,17 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
               </span>
             </div>
           )}
+          {phase !== naturalPhase && !override && (
+            <div className="ws-override" role="status">
+              <span>
+                Vendo o site <strong>{phase === "durante" ? "no dia do casamento" : phase === "depois" ? "depois do casamento" : "antes do casamento"}</strong>.
+                Os convidados veem a versão de hoje.
+              </span>
+              <button type="button" className="text-link" onClick={() => setPhase(naturalPhase)}>
+                Voltar para hoje
+              </button>
+            </div>
+          )}
           {override && (
             <div className="ws-override" role="status">
               <span>
@@ -340,7 +411,7 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
             </div>
           )}
           <div className={`device device-${device} preview-scroll`} tabIndex={0} aria-label="Prévia do site">
-            <WeddingSite data={{ ...live, wedding, design: shown, invitation: null }} phase={phase} mode="preview" today={new Date()} />
+            <WeddingSite data={{ ...live, wedding: { ...wedding, ...info }, design: shown, invitation: null }} phase={phase} mode="preview" today={new Date()} />
           </div>
         </div>
       </div>

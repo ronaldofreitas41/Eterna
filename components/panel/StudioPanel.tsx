@@ -10,15 +10,7 @@ import ReferenceUploader, { type RefView } from "./ReferenceUploader";
 
 type Msg = { id: string; role: "user" | "assistant"; content: string; proposals: Proposal[]; simulated: boolean };
 
-const EXAMPLES = [
-  "Deixe o site mais minimalista.",
-  "Quero mais verde e menos bege.",
-  "Troque as flores por folhagens.",
-  "Deixe a página mais romântica.",
-  "Quero uma capa mais impactante.",
-  "Use as cores da imagem 1.",
-  "Volte para a versão anterior.",
-];
+const EXAMPLES = ["Deixe o site mais minimalista.", "Quero mais verde e menos bege.", "Deixe a página mais romântica.", "Volte para a versão anterior."];
 
 const UNDO = /\b(volte|voltar|desfa[cz]a?|desfazer)\b/;
 

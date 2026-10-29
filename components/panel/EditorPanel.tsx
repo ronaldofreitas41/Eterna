@@ -15,7 +15,7 @@ import {
   contrastWarnings,
 } from "@/lib/theme";
 import type { WorkspaceApi } from "./DesignWorkspace";
-import { ListEditor, SelectField, TextField } from "./fields";
+import { Fold, ListEditor, SelectField, TextField } from "./fields";
 
 const TABS = ["Componentes", "Visual", "Textos"] as const;
 const PALETTE_LABELS: Record<keyof Palette, string> = {
@@ -28,11 +28,11 @@ const PALETTE_LABELS: Record<keyof Palette, string> = {
 
 export type EditorTab = (typeof TABS)[number];
 
-/** Com `only`, mostra uma única aba (a escolha fica com quem usa o painel). */
-export default function EditorPanel({ api, only }: { api: WorkspaceApi; only?: EditorTab }) {
+/** Com `only`, mostra uma única aba (a escolha fica com quem usa o painel). `extras` entra no grupo de cerimônia e recepção. */
+export default function EditorPanel({ api, only, extras }: { api: WorkspaceApi; only?: EditorTab; extras?: React.ReactNode }) {
   const [chosen, setTab] = useState<EditorTab>("Componentes");
   const tab = only ?? chosen;
-  const { design, update } = api;
+  const { design, update, info, setInfo } = api;
   const { theme, content } = design;
   const setTheme = (patch: Partial<typeof theme>) => update((d) => ({ ...d, theme: { ...d.theme, ...patch } }));
   const setContent = <K extends keyof Content>(k: K, v: Content[K]) => update((d) => ({ ...d, content: { ...d.content, [k]: v } }));
@@ -153,20 +153,52 @@ export default function EditorPanel({ api, only }: { api: WorkspaceApi; only?: E
 
       {tab === "Textos" && (
         <div className="stack">
-          <TextField id="t-invite" label="Frase do convite" value={content.inviteLine} maxLength={140} onCommit={(v) => setContent("inviteLine", v)} />
-          <TextField id="t-tagline" label="Frase de abertura" value={content.tagline} maxLength={240} multiline rows={2} onCommit={(v) => setContent("tagline", v)} />
-          <TextField
-            id="t-story"
-            label="História do casal"
-            value={content.story}
-            maxLength={6000}
-            multiline
-            rows={8}
-            hint="Separem os parágrafos com uma linha em branco."
-            onCommit={(v) => setContent("story", v)}
-          />
+          <Fold title="O casamento" hint="Nomes, data e local" open={!info.partner_one || !info.partner_two || !info.wedding_date}>
+            <div className="row2">
+              <TextField id="w-p1" label="Nome" value={info.partner_one} maxLength={80} onCommit={(v) => setInfo({ partner_one: v })} />
+              <TextField id="w-p2" label="Nome" value={info.partner_two} maxLength={80} onCommit={(v) => setInfo({ partner_two: v })} />
+            </div>
+            <TextField id="w-date" label="Data" type="date" value={info.wedding_date ?? ""} maxLength={10} onCommit={(v) => setInfo({ wedding_date: v || null })} />
+            <div className="row2">
+              <TextField id="w-venue" label="Local" value={info.venue} maxLength={160} placeholder="Ex.: Fazenda das Oliveiras" onCommit={(v) => setInfo({ venue: v })} />
+              <TextField id="w-city" label="Cidade" value={info.city} maxLength={120} placeholder="Ex.: Itu, SP" onCommit={(v) => setInfo({ city: v })} />
+            </div>
+            <p className="muted small">Estes dados aparecem no site na hora, sem precisar publicar de novo.</p>
+          </Fold>
 
-          <h3 className="sub">Linha do tempo</h3>
+          <Fold title="Boas-vindas e história" hint="O que os convidados leem primeiro" open>
+            <TextField id="t-invite" label="Frase do convite" value={content.inviteLine} maxLength={140} onCommit={(v) => setContent("inviteLine", v)} />
+            <TextField id="t-tagline" label="Frase de abertura" value={content.tagline} maxLength={240} multiline rows={2} onCommit={(v) => setContent("tagline", v)} />
+            <TextField
+              id="t-story"
+              label="História do casal"
+              value={content.story}
+              maxLength={6000}
+              multiline
+              rows={8}
+              hint="Separem os parágrafos com uma linha em branco."
+              onCommit={(v) => setContent("story", v)}
+            />
+          </Fold>
+
+          <Fold title="Cerimônia e recepção" hint="Horários, endereço e traje">
+            <TextField id="t-ceremony" label="Cerimônia" value={content.ceremony} maxLength={1500} multiline rows={3} onCommit={(v) => setContent("ceremony", v)} />
+            <TextField id="t-reception" label="Recepção" value={content.reception} maxLength={1500} multiline rows={3} onCommit={(v) => setContent("reception", v)} />
+            <TextField id="t-dress" label="Traje (dress code)" value={content.dressCode} maxLength={1000} multiline rows={2} onCommit={(v) => setContent("dressCode", v)} />
+            <TextField
+              id="t-map"
+              label="Link do mapa"
+              type="url"
+              value={content.mapUrl}
+              maxLength={500}
+              placeholder="https://maps.google.com/…"
+              live={false}
+              onCommit={(v) => setContent("mapUrl", v)}
+            />
+            {extras}
+          </Fold>
+
+          <Fold title="Linha do tempo" hint={content.timeline.length ? `${content.timeline.length} momentos` : "Opcional"}>
           <ListEditor<TimelineEntry>
             items={content.timeline}
             max={30}
@@ -184,23 +216,9 @@ export default function EditorPanel({ api, only }: { api: WorkspaceApi; only?: E
               </>
             )}
           />
+          </Fold>
 
-          <h3 className="sub">Cerimônia e recepção</h3>
-          <TextField id="t-ceremony" label="Cerimônia" value={content.ceremony} maxLength={1500} multiline rows={3} onCommit={(v) => setContent("ceremony", v)} />
-          <TextField id="t-reception" label="Recepção" value={content.reception} maxLength={1500} multiline rows={3} onCommit={(v) => setContent("reception", v)} />
-          <TextField id="t-dress" label="Dress code" value={content.dressCode} maxLength={1000} multiline rows={2} onCommit={(v) => setContent("dressCode", v)} />
-          <TextField
-            id="t-map"
-            label="Link do mapa"
-            type="url"
-            value={content.mapUrl}
-            maxLength={500}
-            placeholder="https://maps.google.com/…"
-            hint="O endereço completo fica em Programação → Logística, com controle de quem pode ver."
-            onCommit={(v) => setContent("mapUrl", v)}
-          />
-
-          <h3 className="sub">Perguntas frequentes</h3>
+          <Fold title="Perguntas frequentes" hint={content.faq.length ? `${content.faq.length} perguntas` : "Opcional"}>
           <ListEditor<FaqEntry>
             items={content.faq}
             max={30}
@@ -215,8 +233,9 @@ export default function EditorPanel({ api, only }: { api: WorkspaceApi; only?: E
               </>
             )}
           />
+          </Fold>
 
-          <h3 className="sub">Lista de presentes</h3>
+          <Fold title="Lista de presentes" hint={content.gifts.length ? `${content.gifts.length} presentes` : "Opcional"}>
           <TextField id="t-gifts-note" label="Recado sobre presentes" value={content.giftsNote} maxLength={600} multiline rows={2} onCommit={(v) => setContent("giftsNote", v)} />
           <ListEditor<Gift>
             items={content.gifts}
@@ -236,20 +255,23 @@ export default function EditorPanel({ api, only }: { api: WorkspaceApi; only?: E
                     value={g.priceCents === null ? "" : (g.priceCents / 100).toFixed(2).replace(".", ",")}
                     maxLength={12}
                     placeholder="Opcional"
+                    live={false}
                     onCommit={(v) => {
                       const n = Number(v.replace(/\./g, "").replace(",", "."));
                       set({ ...g, priceCents: v.trim() && Number.isFinite(n) && n >= 0 ? Math.round(n * 100) : null });
                     }}
                   />
-                  <TextField id={`gift-u-${i}`} label="Link da loja" type="url" value={g.url} maxLength={500} placeholder="https://" onCommit={(url) => set({ ...g, url })} />
+                  <TextField id={`gift-u-${i}`} label="Link da loja" type="url" value={g.url} maxLength={500} placeholder="https://" live={false} onCommit={(url) => set({ ...g, url })} />
                 </div>
               </>
             )}
           />
           <p className="muted small">A Eterna não processa pagamentos. Os links levam para a loja escolhida por vocês.</p>
+          </Fold>
 
-          <h3 className="sub">Depois do casamento</h3>
-          <TextField id="t-thanks" label="Agradecimento final" value={content.thankYou} maxLength={3000} multiline rows={4} onCommit={(v) => setContent("thankYou", v)} />
+          <Fold title="Agradecimento" hint="Aparece depois do casamento">
+            <TextField id="t-thanks" label="Agradecimento final" value={content.thankYou} maxLength={3000} multiline rows={4} onCommit={(v) => setContent("thankYou", v)} />
+          </Fold>
         </div>
       )}
     </div>

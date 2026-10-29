@@ -15,7 +15,7 @@ Uma ação principal por tela e recursos apresentados quando fazem sentido.
 | Página inicial | `/` | Conhece a Eterna e toca em "Criar meu site" |
 | Criação guiada | `/painel/novo` | Em 3 etapas: o casamento (só os nomes são obrigatórios), o sonho (descrição e imagens) e a primeira versão real do site, com "Gostei, continuar", "Quero ajustar" e "Tentar outro estilo" |
 | Início | `/painel/[id]` | Vê a prévia, o status e um único "Próximo passo", escolhido pela situação e pela data do casamento |
-| Meu site | `/painel/[id]/site` | Pede mudanças em palavras ao assistente ou edita textos, aparência (incluindo a foto de capa) e seções. Salva sozinho, publica e compartilha. Versões ficam em "Mais" |
+| Meu site | `/painel/[id]/site` | Pede mudanças em palavras ao assistente ou edita nomes, data, local, textos, aparência (incluindo a foto de capa) e seções, com a prévia mudando enquanto digita. Salva sozinho, publica e compartilha. Versões e a prévia do site no dia e depois ficam em "Mais" |
 | Convidados | `/painel/[id]/convidados` | Copia ou envia o link pelo WhatsApp, acompanha quem confirmou, recusou ou não respondeu e exporta a lista em CSV. Grupos são opcionais |
 | Memórias | `/painel/[id]/memorias` | Ativa quando quiser, mostra o QR Code e revisa mensagens, histórias e fotos antes de publicar |
 | Configurações | `/painel/[id]/configuracoes` | Fase do site, QR do site, dados do casamento, exportação e exclusão |

@@ -45,6 +45,8 @@ export function applyProposal(design: SiteDesign, p: Proposal, locks: Set<LockKe
     bodyFont: locks.has("fonts") ? cur.bodyFont : p.theme.bodyFont,
     layout: locks.has("composition") ? cur.layout : p.theme.layout,
     navStyle: locks.has("composition") ? cur.navStyle : p.theme.navStyle,
+    // A cena do Spline é dos noivos: o estúdio nunca troca o link.
+    splineUrl: cur.splineUrl,
   };
 
   let sections = design.sections;

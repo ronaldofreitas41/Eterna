@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import WeddingSite from "@/components/site/WeddingSite";
 import { PRESETS } from "@/lib/presets";
 import type { SiteData } from "@/lib/site";
@@ -13,10 +13,24 @@ export default function HeroDemo({ data }: { data: SiteData }) {
   const [presetId, setPresetId] = useState(CHOICES[0].id);
   const preset = CHOICES.find((p) => p.id === presetId) ?? CHOICES[0];
   const site = { ...data, design: { ...data.design, theme: preset.theme } };
+  const devices = useRef<HTMLDivElement>(null);
+
+  // Inclina os aparelhos em 3D acompanhando o mouse.
+  const tilt = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = devices.current;
+    if (!el || e.pointerType !== "mouse") return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty("--tilt-x", `${((e.clientY - r.top) / r.height - 0.5) * -6}deg`);
+    el.style.setProperty("--tilt-y", `${((e.clientX - r.left) / r.width - 0.5) * 8}deg`);
+  };
+  const untilt = () => {
+    devices.current?.style.setProperty("--tilt-x", "0deg");
+    devices.current?.style.setProperty("--tilt-y", "0deg");
+  };
 
   return (
     <div className="l-hero-demo">
-      <div className="l-devices" aria-hidden="true">
+      <div className="l-devices" aria-hidden="true" ref={devices} onPointerMove={tilt} onPointerLeave={untilt}>
         <div className="l-desktop">
           <div className="l-bar">
             <i />

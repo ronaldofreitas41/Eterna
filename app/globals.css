@@ -3493,3 +3493,73 @@ details.studio-block > summary {
 .s-pix-free .s-pix {
   width: min(320px, 100%);
 }
+
+/* ---------- cenas 3D (components/site/Scene3D.tsx) ---------- */
+.scene3d {
+  pointer-events: none;
+}
+.scene3d canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+.s-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.s-fx {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+}
+.s-fx-spline {
+  opacity: 0.9;
+}
+.s-fx-rings {
+  width: clamp(110px, 20cqi, 170px);
+  aspect-ratio: 1;
+  margin-block: -12px -8px;
+}
+.s-layout-editorial .s-fx-rings,
+.s-layout-split .s-fx-rings {
+  margin-inline-start: -18px;
+}
+/* O texto da capa continua legível sobre o efeito. */
+.s-hero-text {
+  text-shadow: 0 0 18px var(--s-bg), 0 0 2px var(--s-bg);
+}
+
+.l-hero-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.l-hero-fx {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  mask-image: linear-gradient(to bottom, #000 70%, transparent);
+}
+.l-rings {
+  width: 120px;
+  aspect-ratio: 1;
+  margin: -16px 0 -18px -14px;
+}
+.l-devices {
+  transform: perspective(1400px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 0.6s var(--ease);
+}
+.l-devices .l-phone {
+  transform: translateZ(40px);
+}
+@media (max-width: 640px) {
+  .l-rings {
+    width: 92px;
+  }
+}

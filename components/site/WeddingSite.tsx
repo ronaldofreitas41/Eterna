@@ -2,7 +2,7 @@ import { formatBRL, safeUrl } from "@/lib/design";
 import { daysBetween, formatLongDate, parseDate } from "@/lib/phase";
 import { visibleSections, type SectionId } from "@/lib/sections";
 import type { SiteData, SiteEntry } from "@/lib/site";
-import { themeStyle } from "@/lib/theme";
+import { splineEmbed, themeStyle } from "@/lib/theme";
 import type { SitePhase } from "@/lib/types";
 import Ornament from "./Ornament";
 import ScheduleList from "./ScheduleList";
@@ -10,6 +10,7 @@ import RsvpForm from "./RsvpForm";
 import ContributionForm from "./ContributionForm";
 import PhotoUpload from "./PhotoUpload";
 import GiftPix from "./GiftPix";
+import Scene3D from "./Scene3D";
 import { pixReady } from "@/lib/pix";
 
 export type SiteMode = "live" | "preview" | "demo";
@@ -375,6 +376,7 @@ export default function WeddingSite({ data, phase, mode, today }: Props) {
   };
 
   const nav = shown.filter((id) => NAV[id]);
+  const spline = theme.effect === "spline" ? splineEmbed(theme.splineUrl) : null;
 
   return (
     <div className={`site s-layout-${theme.layout} s-nav-${theme.navStyle} s-btn-${theme.buttonStyle}`} style={themeStyle(theme)}>
@@ -389,9 +391,11 @@ export default function WeddingSite({ data, phase, mode, today }: Props) {
       )}
 
       <header className="s-hero">
+        {(theme.effect === "petals" || theme.effect === "lights") && <Scene3D kinds={[theme.effect]} colors={theme.palette} className="s-fx" />}
+        {spline && <iframe className="s-fx s-fx-spline" src={spline} title="Cena 3D" loading="lazy" tabIndex={-1} aria-hidden="true" />}
         <div className="s-hero-text">
           {phase === "durante" && <span className="s-live">Ao vivo</span>}
-          <Ornament kind={theme.ornament} />
+          {theme.effect === "rings" ? <Scene3D kinds={["rings"]} colors={theme.palette} className="s-fx-rings" /> : <Ornament kind={theme.ornament} />}
           {c.inviteLine && <p className="s-eyebrow">{c.inviteLine}</p>}
           <h1 className="s-names">
             {w.partner_one || "Noiva"} <span className="s-amp">&amp;</span> {w.partner_two || "Noivo"}

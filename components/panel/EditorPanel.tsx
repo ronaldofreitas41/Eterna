@@ -9,11 +9,13 @@ import {
   BODY_FONTS,
   BUTTON_STYLES,
   DISPLAY_FONTS,
+  EFFECTS,
   LAYOUTS,
   NAV_STYLES,
   ORNAMENTS,
   Palette,
   contrastWarnings,
+  splineEmbed,
 } from "@/lib/theme";
 import type { WorkspaceApi } from "./DesignWorkspace";
 import { Fold, ListEditor, SelectField, TextField } from "./fields";
@@ -104,7 +106,7 @@ export default function EditorPanel({ api, only, extras }: { api: WorkspaceApi; 
           <h3 className="sub">Estilos prontos</h3>
           <div className="preset-row">
             {PRESETS.map((p) => (
-              <button key={p.id} type="button" className="preset small" onClick={() => setTheme(p.theme)} title={p.description}>
+              <button key={p.id} type="button" className="preset small" onClick={() => setTheme({ ...p.theme, splineUrl: theme.splineUrl })} title={p.description}>
                 <span className="preset-swatch" style={{ background: p.theme.palette.background }}>
                   {[p.theme.palette.ink, p.theme.palette.accent, p.theme.palette.surface].map((c) => (
                     <i key={c} style={{ background: c }} />
@@ -149,6 +151,25 @@ export default function EditorPanel({ api, only, extras }: { api: WorkspaceApi; 
           <SelectField id="nav" label="Menu" value={theme.navStyle} options={NAV_STYLES} onChange={(v) => setTheme({ navStyle: v })} />
           <SelectField id="buttons" label="Botões" value={theme.buttonStyle} options={BUTTON_STYLES} onChange={(v) => setTheme({ buttonStyle: v })} />
           <SelectField id="ornament" label="Ornamento" value={theme.ornament} options={ORNAMENTS} onChange={(v) => setTheme({ ornament: v })} />
+
+          <h3 className="sub">Efeito 3D na capa</h3>
+          <SelectField id="effect" label="Efeito" value={theme.effect} options={EFFECTS} onChange={(v) => setTheme({ effect: v })} />
+          {theme.effect === "spline" && (
+            <>
+              <TextField
+                id="spline"
+                label="Link da cena no Spline"
+                value={theme.splineUrl}
+                maxLength={300}
+                live={false}
+                placeholder="https://my.spline.design/..."
+                hint="No Spline, use Export → Public URL e colem o link aqui. A cena aparece atrás dos nomes."
+                onCommit={(v) => setTheme({ splineUrl: v.trim() })}
+              />
+              {theme.splineUrl && !splineEmbed(theme.splineUrl) && <p className="notice warn">Esse link não é de uma cena publicada do Spline. Ele começa com https://my.spline.design/.</p>}
+            </>
+          )}
+          {theme.effect !== "none" && <p className="muted small">O efeito é suave, pausa quando sai da tela e fica parado para quem prefere menos movimento.</p>}
         </div>
       )}
 

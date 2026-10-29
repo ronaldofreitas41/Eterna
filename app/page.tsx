@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HeroDemo from "@/components/landing/HeroDemo";
+import Scene3D from "@/components/site/Scene3D";
 import { demoSiteData } from "@/lib/demo-site";
 import { formatBRL } from "@/lib/design";
 import { PLANS, PLANS_ARE_DEMO } from "@/lib/plans";
@@ -12,6 +13,9 @@ const STEPS = [
   { t: "Compartilhem", d: "Cada convidado recebe um convite próprio, com as informações do grupo dele. No dia, um QR Code abre o site ao vivo." },
   { t: "Preservem", d: "Depois da festa, o site vira álbum, livro de mensagens e cápsula do tempo, construídos por todos." },
 ];
+
+// Cores da marca para as cenas 3D da capa.
+const BRAND = { background: "#FBF8F2", surface: "#E9DCCB", accent: "#6F8B70", ink: "#22201C" };
 
 const FAQ = [
   {
@@ -59,8 +63,11 @@ export default function Home() {
         </nav>
       </header>
 
-      <section className="l-hero wrap">
+      <div className="l-hero-stage">
+        <Scene3D kinds={["petals", "lights"]} colors={BRAND} density={0.7} className="l-hero-fx" />
+        <section className="l-hero wrap">
         <div className="l-hero-text">
+          <Scene3D kinds={["rings"]} colors={BRAND} className="l-rings" />
           <span className="eyebrow">Sites de casamento com um assistente de criação</span>
           <h1>Seu casamento merece uma história só de vocês.</h1>
           <p className="lede">Imagine, personalize e compartilhe cada detalhe do seu grande dia. O Eterna transforma suas ideias em um site de casamento único.</p>
@@ -74,7 +81,8 @@ export default function Home() {
           </div>
         </div>
         <HeroDemo data={demo} />
-      </section>
+        </section>
+      </div>
 
       <section className="l-section wrap" id="como-funciona">
         <span className="eyebrow">Como funciona</span>

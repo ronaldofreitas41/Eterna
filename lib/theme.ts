@@ -40,6 +40,25 @@ export const ORNAMENTS = {
   none: "Sem ornamento",
 } as const;
 
+// Efeito 3D na capa do site. As cenas usam as cores do tema (components/site/Scene3D.tsx).
+export const EFFECTS = {
+  none: "Sem efeito",
+  petals: "Pétalas flutuando",
+  lights: "Luzes suaves",
+  rings: "Alianças em 3D",
+  spline: "Cena própria do Spline",
+} as const;
+
+/** Só aceita cenas publicadas do Spline (my.spline.design), exibidas num iframe. */
+export function splineEmbed(url: string) {
+  try {
+    const u = new URL(url.trim());
+    return u.protocol === "https:" && u.hostname === "my.spline.design" && u.pathname.length > 1 ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 type Keys<T> = [keyof T & string, ...(keyof T & string)[]];
 export const keysOf = <T extends object>(o: T) => Object.keys(o) as Keys<T>;
 
@@ -60,6 +79,8 @@ export const ThemeSchema = z.object({
   navStyle: z.enum(keysOf(NAV_STYLES)),
   buttonStyle: z.enum(keysOf(BUTTON_STYLES)),
   ornament: z.enum(keysOf(ORNAMENTS)),
+  effect: z.enum(keysOf(EFFECTS)),
+  splineUrl: z.string().max(300),
 });
 
 export type Theme = z.infer<typeof ThemeSchema>;
@@ -73,6 +94,9 @@ export const DEFAULT_THEME: Theme = {
   navStyle: "center",
   buttonStyle: "solid",
   ornament: "foliage",
+  // Sites salvos antes dos efeitos continuam iguais; os modelos novos já vêm com um efeito.
+  effect: "none",
+  splineUrl: "",
 };
 
 export function parseTheme(raw: unknown): Theme {
@@ -94,6 +118,8 @@ export function parseTheme(raw: unknown): Theme {
     navStyle: pick("navStyle"),
     buttonStyle: pick("buttonStyle"),
     ornament: pick("ornament"),
+    effect: pick("effect"),
+    splineUrl: pick("splineUrl"),
   };
 }
 

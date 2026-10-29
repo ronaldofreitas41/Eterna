@@ -4,7 +4,7 @@ import { isIP } from "node:net";
 import { z } from "zod";
 import type { SiteDesign } from "./design";
 import { SECTIONS, SECTION_IDS } from "./sections";
-import { BODY_FONTS, BUTTON_STYLES, DISPLAY_FONTS, HEX, LAYOUTS, NAV_STYLES, ORNAMENTS, keysOf, parseTheme } from "./theme";
+import { BODY_FONTS, BUTTON_STYLES, DISPLAY_FONTS, EFFECTS, HEX, LAYOUTS, NAV_STYLES, ORNAMENTS, keysOf, parseTheme } from "./theme";
 import { LOCKABLE, LockKey, Proposal, StudioReply } from "./studio";
 
 // IA por qualquer API compatível com o formato da OpenAI (chat/completions).
@@ -162,6 +162,10 @@ const ThemeOut = z.object({
   navStyle: z.enum(keysOf(NAV_STYLES)),
   buttonStyle: z.enum(keysOf(BUTTON_STYLES)),
   ornament: z.enum(keysOf(ORNAMENTS)),
+  effect: z
+    .enum(keysOf(EFFECTS))
+    .optional()
+    .describe("Efeito 3D na capa: petals (romântico), lights (delicado), rings (alianças), none (sóbrio). Use spline só se já estiver no design atual"),
 });
 
 const ProposalOut = z.object({
@@ -208,7 +212,7 @@ Como trabalhar:
 - Respeite os elementos travados pelos noivos: não altere o que estiver na lista de travados.
 - Sempre entregue duas propostas: a principal, fiel ao pedido, e uma alternativa coerente que explore outra direção para comparação.
 - Garanta contraste legível (ink sobre background no mínimo 7:1; muted no mínimo 4.5:1).
-- Use apenas as opções do esquema para fontes, layout, menu, botões e ornamentos. Cores sempre no formato #RRGGBB.
+- Use apenas as opções do esquema para fontes, layout, menu, botões, ornamentos e efeito 3D. Cores sempre no formato #RRGGBB.
 - Não invente fatos sobre o casal. Só reescreva textos se o pedido envolver textos; caso contrário, devolva string vazia neles.
 
 Seções disponíveis (ids): ${SECTION_IDS.map((id) => `${id} = ${SECTIONS[id].label}`).join("; ")}.`;
@@ -247,6 +251,8 @@ export async function generateStudioReply(input: StudioInput): Promise<StudioRep
     // Cores fora do formato ou opções inválidas caem no tema atual, campo a campo.
     theme: parseTheme({
       ...p.theme,
+      effect: p.theme.effect ?? current.effect,
+      splineUrl: current.splineUrl,
       palette: Object.fromEntries(
         Object.entries(p.theme.palette).map(([k, v]) => [k, HEX.test(v) ? v : current.palette[k as keyof typeof current.palette]]),
       ),

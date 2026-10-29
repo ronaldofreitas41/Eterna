@@ -15,6 +15,8 @@ export const PRESETS: Preset[] = [
       navStyle: "center",
       buttonStyle: "solid",
       ornament: "foliage",
+      effect: "petals",
+      splineUrl: "",
     },
   },
   {
@@ -29,6 +31,8 @@ export const PRESETS: Preset[] = [
       navStyle: "center",
       buttonStyle: "outline",
       ornament: "florals",
+      effect: "lights",
+      splineUrl: "",
     },
   },
   {
@@ -43,6 +47,8 @@ export const PRESETS: Preset[] = [
       navStyle: "split",
       buttonStyle: "outline",
       ornament: "line",
+      effect: "none",
+      splineUrl: "",
     },
   },
   {
@@ -57,6 +63,8 @@ export const PRESETS: Preset[] = [
       navStyle: "pill",
       buttonStyle: "pill",
       ornament: "florals",
+      effect: "petals",
+      splineUrl: "",
     },
   },
   {
@@ -71,6 +79,8 @@ export const PRESETS: Preset[] = [
       navStyle: "split",
       buttonStyle: "solid",
       ornament: "none",
+      effect: "rings",
+      splineUrl: "",
     },
   },
   {
@@ -85,6 +95,8 @@ export const PRESETS: Preset[] = [
       navStyle: "pill",
       buttonStyle: "pill",
       ornament: "foliage",
+      effect: "lights",
+      splineUrl: "",
     },
   },
 ];

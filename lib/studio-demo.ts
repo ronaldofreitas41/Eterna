@@ -53,10 +53,10 @@ export function runDemoCommand(
     changes.push("usei serifas clássicas, composição centralizada e flores delicadas");
   }
   if (/romant/.test(q)) {
-    theme = { ...theme, displayFont: "pinyon", bodyFont: "figtree", ornament: "florals", buttonStyle: "pill", navStyle: "pill" };
+    theme = { ...theme, displayFont: "pinyon", bodyFont: "figtree", ornament: "florals", buttonStyle: "pill", navStyle: "pill", effect: "petals" };
     theme.palette = { ...theme.palette, accent: "#A8665C", surface: "#F3E6E0" };
     label = "Mais romântico";
-    changes.push("usei caligrafia nos nomes, flores delicadas e um rosa antigo nos detalhes");
+    changes.push("usei caligrafia nos nomes, flores delicadas, pétalas flutuando na capa e um rosa antigo nos detalhes");
   }
   if (/capa/.test(q) && /impact|destaque|marcante|forte/.test(q)) {
     theme = { ...theme, layout: "editorial", ornament: "none" };
@@ -73,6 +73,19 @@ export function runDemoCommand(
   } else if (/\bflor/.test(q)) {
     theme.ornament = "florals";
     changes.push("usei flores delicadas como ornamento");
+  }
+  if (/sem (efeito|animac|3d|movimento)|tire (o|os) (efeito|3d)|mais (parado|calmo)/.test(q)) {
+    theme.effect = "none";
+    changes.push("tirei o efeito da capa");
+  } else if (/alianc|aneis|anel/.test(q)) {
+    theme.effect = "rings";
+    changes.push("coloquei um par de alianças em 3D girando na capa");
+  } else if (/luz|luzes|brilh|bokeh/.test(q)) {
+    theme.effect = "lights";
+    changes.push("coloquei luzes suaves flutuando na capa");
+  } else if (/petala|3d|anima|efeito|movimento|particula/.test(q)) {
+    theme.effect = "petals";
+    changes.push("coloquei pétalas flutuando em 3D na capa");
   }
   if (/marfim|off.?white/.test(q)) {
     theme.palette = { ...theme.palette, background: "#FBF8F2", surface: "#F2EDE3" };

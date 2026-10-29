@@ -61,15 +61,15 @@ export default function Home() {
 
       <section className="l-hero wrap">
         <div className="l-hero-text">
-          <span className="eyebrow">Sites de casamento criados com vocês, vividos por todos</span>
-          <h1>Seu casamento não precisa caber em um template.</h1>
-          <p className="lede">Transforme suas referências, ideias e histórias em uma experiência única, criada por vocês e vivida por todos.</p>
+          <span className="eyebrow">Sites de casamento com um assistente de criação</span>
+          <h1>Seu casamento merece uma história só de vocês.</h1>
+          <p className="lede">Imagine, personalize e compartilhe cada detalhe do seu grande dia. O Eterna transforma suas ideias em um site de casamento único.</p>
           <div className="row-actions">
-            <Link href="/entrar?modo=criar" className="btn primary">
-              Criar meu casamento
+            <Link href="/entrar?modo=criar" className="btn primary large">
+              Criar meu site
             </Link>
-            <Link href="/exemplo" className="btn ghost">
-              Explorar uma experiência
+            <Link href="/exemplo" className="text-link">
+              Ver um site de exemplo
             </Link>
           </div>
         </div>
@@ -267,9 +267,9 @@ export default function Home() {
       <section className="l-cta">
         <div className="wrap">
           <h2>Comecem a história de vocês hoje</h2>
-          <p className="lede">Criar a conta leva um minuto. O resto vocês fazem no seu tempo.</p>
+          <p className="lede">Em poucos minutos vocês veem a primeira versão do site. O resto fica no tempo de vocês.</p>
           <Link href="/entrar?modo=criar" className="btn primary">
-            Criar meu casamento
+            Criar meu site
           </Link>
         </div>
       </section>

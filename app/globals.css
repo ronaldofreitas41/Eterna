@@ -3021,3 +3021,351 @@ details.studio-block > summary {
     zoom: 0.24;
   }
 }
+
+.btn.large {
+  min-height: 52px;
+  padding: 0 28px;
+  font-size: 1.02rem;
+}
+
+/* ---------- Meu site ---------- */
+.site-panel {
+  display: grid;
+  align-content: start;
+}
+.site-tabs {
+  margin: 16px 20px 0;
+}
+.side-panel.pt0 {
+  padding-top: 0;
+}
+.side-panel.pb0 {
+  padding-bottom: 0;
+}
+.cover-thumb.small {
+  width: 120px;
+}
+.more-menu {
+  position: relative;
+}
+.more-menu > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.more-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.more-menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  min-width: 220px;
+  display: grid;
+  padding: 6px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.more-menu-list > button,
+.more-menu-list > a {
+  text-align: left;
+  padding: 10px 12px;
+  border: 0;
+  background: none;
+  border-radius: 8px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+.more-menu-list > *:hover {
+  background: var(--paper);
+}
+.more-menu-list .danger {
+  color: var(--danger);
+}
+.ws-status {
+  min-width: 150px;
+  text-align: right;
+}
+details.studio-block > summary {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  padding: 8px 0;
+}
+
+/* ---------- Início ---------- */
+.home {
+  gap: 22px;
+}
+.home-head {
+  display: grid;
+  gap: 6px;
+}
+.home-head h1 {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+}
+.next-step {
+  padding: clamp(22px, 4vw, 34px);
+  border-radius: var(--radius-lg);
+  background: var(--sage-tint);
+  border: 1px solid #c8d6c4;
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+.next-step .mono {
+  color: var(--sage-deep);
+}
+.next-step h2 {
+  font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+}
+.next-step p {
+  max-width: 56ch;
+  color: var(--ink-2);
+}
+.home-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.home-links {
+  display: grid;
+  gap: 12px;
+}
+.home-link {
+  display: grid;
+  gap: 4px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+.home-link:hover {
+  border-color: var(--ink);
+}
+.home-link strong {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.35rem;
+}
+.home-link.quiet {
+  background: transparent;
+}
+.home-link.highlight {
+  border-color: var(--sage);
+}
+.home-tasks > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.home-tasks > summary h2 {
+  font-size: 1.3rem;
+}
+.home-tasks[open] > summary {
+  margin-bottom: 8px;
+}
+@media (max-width: 960px) {
+  .home-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.plain-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+}
+.memories-intro {
+  gap: 14px;
+}
+
+/* ---------- página dos convidados (memórias) ---------- */
+.guest-page {
+  min-height: 100vh;
+}
+.guest-head {
+  padding: clamp(40px, 10cqi, 96px) var(--s-pad) 12px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  text-align: center;
+}
+.guest-choices {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+.guest-choice {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  padding: 22px;
+  min-height: 96px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--s-ink) 16%, transparent);
+  background: var(--s-surface);
+  color: var(--s-ink);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.guest-choice:hover {
+  border-color: var(--s-accent);
+  transform: translateY(-2px);
+}
+.guest-choice strong {
+  font-family: var(--s-display);
+  font-weight: 400;
+  font-size: 1.3rem;
+}
+.guest-choice span {
+  color: var(--s-muted);
+  font-size: 0.9rem;
+}
+.guest-form {
+  max-width: 680px;
+}
+
+/* ---------- Convidados ---------- */
+.share-card {
+  background: var(--paper);
+}
+.groups-card > summary {
+  display: grid;
+  gap: 4px;
+  cursor: pointer;
+  list-style: none;
+}
+.groups-card > summary::-webkit-details-marker {
+  display: none;
+}
+.groups-card > summary h2 {
+  font-size: 1.3rem;
+}
+.groups-card[open] > summary {
+  margin-bottom: 10px;
+}
+
+/* ---------- primeira versão ---------- */
+.onboarding.wide {
+  max-width: 1120px;
+}
+.first-version {
+  display: grid;
+  gap: 16px;
+}
+.fv-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.fv-head > div:first-child {
+  display: grid;
+  gap: 8px;
+  max-width: 640px;
+}
+.fv-preview {
+  max-height: min(62vh, 640px);
+}
+.fv-preview.device-mobile {
+  height: min(62vh, 640px);
+}
+/* As decisões ficam sempre à vista, sem rolar a página. */
+.fv-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, var(--ivory) 75%, transparent);
+}
+.idea-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.idea-chips button {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--line);
+  background: var(--white);
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.idea-chips button:hover {
+  border-color: var(--sage-deep);
+  color: var(--ink);
+}
+.onb-refs > summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--sage-deep);
+  padding: 6px 0;
+}
+.onb-refs[open] > summary {
+  margin-bottom: 10px;
+}
+
+/* Prévia da Início sempre na largura do cartão (zoom de 50% sobre o dobro da largura). */
+.mini-preview-inner {
+  width: 200%;
+}
+
+/* Meu site no celular: alternar entre editar e ver o site. */
+.pane-switch {
+  display: none;
+}
+@media (max-width: 960px) {
+  .pane-switch {
+    display: flex;
+    position: sticky;
+    top: 64px;
+    z-index: 15;
+    margin: 10px 16px 0;
+  }
+  .ws-body.pane-editar .ws-preview {
+    display: none;
+  }
+  .ws-body.pane-previa .ws-side {
+    display: none;
+  }
+  .ws-toolbar {
+    padding: 10px 16px;
+  }
+  .ws-status {
+    min-width: 0;
+    text-align: left;
+  }
+}
+
+/* Página do convidado: opções e orientações na fonte de leitura; a caligrafia fica nos nomes. */
+.guest-choice strong {
+  font-family: var(--s-body);
+  font-weight: 600;
+  font-size: 1.08rem;
+}
+.guest-head .s-tagline,
+.guest-form h2 {
+  font-family: var(--s-body);
+  font-style: normal;
+}
+.guest-form h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+}

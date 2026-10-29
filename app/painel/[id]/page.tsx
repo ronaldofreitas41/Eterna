@@ -2,146 +2,157 @@ import Link from "next/link";
 import { one, query } from "@/lib/db";
 import { getOwnedWedding } from "@/lib/panel";
 import { parseDesign } from "@/lib/design";
-import { daysBetween, formatLongDate, parseDate, PHASE_NAMES, resolvePhase } from "@/lib/phase";
+import { daysBetween, formatLongDate, parseDate, resolvePhase, todayInBrazil } from "@/lib/phase";
 import { loadLiveData, publicWedding } from "@/lib/site";
 import type { Guest, Rsvp, Task, WeddingDraft } from "@/lib/types";
 import WeddingSite from "@/components/site/WeddingSite";
 import TaskList from "@/components/panel/TaskList";
+import CopyLinkButton from "@/components/panel/CopyLinkButton";
 
-export const metadata = { title: "Visão geral · Eterna" };
+export const metadata = { title: "Início · Eterna" };
 
-const COUNTS = `
-  select (select count(*)::int from contributions where wedding_id = $1 and status = 'pending') as contrib,
-         (select count(*)::int from photos where wedding_id = $1 and status = 'pending') as photos,
-         (select count(*)::int from guest_groups where wedding_id = $1) as groups,
-         (select count(*)::int from campaigns where wedding_id = $1 and active) as campaigns,
-         (select count(*)::int from design_references where wedding_id = $1) as refs`;
+type Step = { title: string; text: string; href: string; cta: string; copy?: boolean };
 
-export default async function OverviewPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function InicioPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { wedding } = await getOwnedWedding(id);
 
-  const [draft, g, r, tasks, counts, live] = await Promise.all([
+  const [draft, guests, rsvps, tasks, pending, live] = await Promise.all([
     one<WeddingDraft>("select * from wedding_drafts where wedding_id = $1", [id]),
     query<Pick<Guest, "attending" | "party_size">>("select attending, party_size from guests where wedding_id = $1", [id]),
     query<Pick<Rsvp, "attending" | "party_size">>("select attending, party_size from rsvps where wedding_id = $1", [id]),
     query<Task>("select * from tasks where wedding_id = $1 order by done, due_date nulls last, created_at", [id]),
-    one<{ contrib: number; photos: number; groups: number; campaigns: number; refs: number }>(COUNTS, [id]),
+    one<{ n: number }>(
+      `select ((select count(*) from contributions where wedding_id = $1 and status = 'pending')
+             + (select count(*) from photos where wedding_id = $1 and status = 'pending'))::int as n`,
+      [id],
+    ),
     loadLiveData(wedding, { includePrivateLogistics: true }),
   ]);
-  const n = counts ?? { contrib: 0, photos: 0, groups: 0, campaigns: 0, refs: 0 };
 
   const design = parseDesign(draft?.design);
-  const confirmedPeople =
-    g.filter((x) => x.attending).reduce((s, x) => s + x.party_size, 0) + r.filter((x) => x.attending).reduce((s, x) => s + x.party_size, 0);
-  const responded = g.filter((x) => x.attending !== null).length;
-  const today = new Date();
+  const today = todayInBrazil();
   const date = parseDate(wedding.wedding_date);
   const daysLeft = date ? daysBetween(today, date) : null;
   const phase = resolvePhase(wedding.phase, wedding.wedding_date, today);
+  const base = `/painel/${id}`;
 
-  const checklist = [
-    { done: Boolean(wedding.wedding_date), label: "Definir a data", href: "configuracoes" },
-    { done: n.refs > 0, label: "Enviar referências visuais", href: "estudio" },
-    { done: Boolean(design.content.story), label: "Contar a história do casal", href: "editor" },
-    { done: live.schedule.length > 0, label: "Montar a programação", href: "programacao" },
-    { done: n.groups > 0 && g.length > 0, label: "Cadastrar grupos e convidados", href: "convidados" },
-    { done: n.campaigns > 0, label: "Abrir uma campanha do Construir Juntos", href: "juntos" },
-    { done: wedding.published, label: "Publicar o site", href: "editor" },
-  ];
-  const progress = Math.round((checklist.filter((c) => c.done).length / checklist.length) * 100);
+  const confirmed = guests.filter((g) => g.attending).reduce((s, g) => s + g.party_size, 0) + rsvps.filter((r) => r.attending).reduce((s, r) => s + r.party_size, 0);
+  const waiting = guests.filter((g) => g.attending === null).length;
+  const answers = guests.filter((g) => g.attending !== null).length + rsvps.length;
+  const toReview = pending?.n ?? 0;
+  const memoriesMoment = phase !== "antes" || (daysLeft !== null && daysLeft <= 7);
+
+  // Uma única sugestão: a mais útil para este momento do casamento.
+  const step: Step =
+    phase === "depois"
+      ? wedding.accepting_contributions
+        ? { title: "Revivam o grande dia", text: "Vejam as fotos e mensagens que os convidados enviaram e escolham o que fica no álbum.", href: `${base}/memorias`, cta: "Ver as memórias" }
+        : { title: "Reúnam as memórias do casamento", text: "Ativem o envio de fotos e mensagens para os convidados ajudarem a montar o álbum.", href: `${base}/memorias`, cta: "Ativar memórias" }
+      : memoriesMoment
+        ? wedding.accepting_contributions
+          ? { title: "Mostrem o QR Code aos convidados", text: "Com ele, os convidados enviam fotos e mensagens durante a festa, sem precisar de cadastro.", href: `${base}/memorias`, cta: "Ver o QR Code" }
+          : { title: "Recebam fotos durante a festa", text: "Ativem o envio de fotos e mensagens. Vocês revisam tudo antes de aparecer no site.", href: `${base}/memorias`, cta: "Ativar memórias" }
+        : !design.content.story && !design.content.tagline
+          ? { title: "Contem um pouco da história de vocês", text: "Uma frase de abertura e alguns parágrafos já deixam o site com a cara de vocês.", href: `${base}/site?aba=textos`, cta: "Escrever a história" }
+          : !wedding.wedding_date
+            ? { title: "Definam a data do casamento", text: "Com a data, o site mostra a contagem regressiva e muda sozinho no grande dia.", href: `${base}/configuracoes`, cta: "Informar a data" }
+            : !wedding.published
+              ? { title: "Publiquem o site", text: "Quando estiverem satisfeitos, publiquem para os convidados poderem ver e confirmar presença.", href: `${base}/site`, cta: "Revisar e publicar" }
+              : answers === 0
+                ? { title: "Compartilhem o convite", text: "Enviem o link do site para os convidados confirmarem presença.", href: `${base}/convidados`, cta: "Copiar o link do site", copy: true }
+                : { title: "Acompanhem as confirmações", text: `${confirmed} ${confirmed === 1 ? "pessoa confirmou" : "pessoas confirmaram"} até agora${waiting ? ` e ${waiting} ${waiting === 1 ? "convite aguarda" : "convites aguardam"} resposta` : ""}.`, href: `${base}/convidados`, cta: "Ver convidados" };
+
+  const when =
+    daysLeft === null ? "Data a definir" : daysLeft > 1 ? `Faltam ${daysLeft} dias` : daysLeft === 1 ? "É amanhã!" : daysLeft === 0 ? "É hoje!" : `Casaram há ${-daysLeft} ${daysLeft === -1 ? "dia" : "dias"}`;
 
   return (
-    <div className="page">
-      <header className="page-head">
-        <div>
-          <span className="mono">{PHASE_NAMES[phase]}</span>
-          <h1>
-            {wedding.partner_one} &amp; {wedding.partner_two}
-          </h1>
-          <p className="lede">
-            {formatLongDate(wedding.wedding_date) || "Data a definir"}
-            {wedding.venue && ` · ${wedding.venue}`}
-            {daysLeft !== null && daysLeft > 0 && ` · faltam ${daysLeft} dias`}
-          </p>
-        </div>
-        <div className="row-actions">
-          <Link href={`/painel/${id}/estudio`} className="btn ghost">
-            Abrir o estúdio
-          </Link>
-          <Link href={`/painel/${id}/editor`} className="btn primary">
-            Editar o site
-          </Link>
-        </div>
+    <div className="page home">
+      <header className="home-head">
+        <span className="mono">{when}</span>
+        <h1>
+          {wedding.partner_one} &amp; {wedding.partner_two}
+        </h1>
+        <p className="lede">{[formatLongDate(wedding.wedding_date), wedding.venue].filter(Boolean).join(" · ") || "Vamos construir o site de vocês juntos."}</p>
       </header>
 
       {wedding.is_demo && <p className="notice">Este é um casamento de demonstração, com nomes e mensagens fictícios.</p>}
 
-      <section className="stats" aria-label="Números do casamento">
-        <Link href={`/painel/${id}/convidados`} className="stat">
-          <span className="stat-n">{g.length}</span>
-          <span>convidados cadastrados</span>
-          <small>{responded} responderam pelo convite</small>
-        </Link>
-        <Link href={`/painel/${id}/convidados`} className="stat">
-          <span className="stat-n">{confirmedPeople}</span>
-          <span>pessoas confirmadas</span>
-          <small>{r.length} pelo link aberto</small>
-        </Link>
-        <Link href={`/painel/${id}/juntos`} className={`stat${n.contrib ? " attention" : ""}`}>
-          <span className="stat-n">{n.contrib}</span>
-          <span>contribuições aguardando</span>
-          <small>{live.chapters.reduce((s, c) => s + c.entries.length, 0) + live.guestbook.length} publicadas</small>
-        </Link>
-        <Link href={`/painel/${id}/fotos`} className={`stat${n.photos ? " attention" : ""}`}>
-          <span className="stat-n">{n.photos}</span>
-          <span>fotos aguardando</span>
-          <small>{live.photos.length} aprovadas</small>
-        </Link>
+      <section className="next-step" aria-labelledby="proximo-passo">
+        <span className="mono">Próximo passo</span>
+        <h2 id="proximo-passo">{step.title}</h2>
+        <p>{step.text}</p>
+        <div className="row-actions">
+          {step.copy && wedding.published ? (
+            <CopyLinkButton path={`/c/${wedding.slug}`} label={step.cta} className="btn primary large" />
+          ) : (
+            <Link href={step.href} className="btn primary large">
+              {step.cta}
+            </Link>
+          )}
+        </div>
       </section>
 
-      <div className="overview-grid">
-        <section className="card">
+      <div className="home-grid">
+        <section className="card my-wedding" aria-labelledby="meu-casamento">
           <div className="card-head">
-            <h2>Progresso</h2>
-            <span className="mono">{progress}%</span>
+            <h2 id="meu-casamento">Meu site</h2>
+            <span className={`chip ${wedding.published ? "ok" : ""}`}>{wedding.published ? "Publicado" : "Ainda não publicado"}</span>
           </div>
-          <div className="progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Progresso de criação">
-            <span style={{ width: `${progress}%` }} />
-          </div>
-          <ul className="checklist">
-            {checklist.map((c) => (
-              <li key={c.label} className={c.done ? "done" : undefined}>
-                <span className="check-dot" aria-hidden="true" />
-                {c.done ? <span>{c.label}</span> : <Link href={`/painel/${id}/${c.href}`}>{c.label}</Link>}
-                <span className="sr-only">{c.done ? "concluído" : "pendente"}</span>
-              </li>
-            ))}
-          </ul>
-          <h3 className="sub">Tarefas de vocês</h3>
-          <TaskList weddingId={id} initial={tasks} />
-        </section>
-
-        <section className="card preview-card">
-          <div className="card-head">
-            <h2>Prévia do rascunho</h2>
-            <Link href={`/painel/${id}/editor`} className="text-link">
-              Editar
-            </Link>
-          </div>
-          <div className="mini-preview preview-scroll" tabIndex={0} aria-label="Prévia do rascunho">
+          <div className="mini-preview preview-scroll" tabIndex={0} aria-label="Prévia do site">
             <div className="mini-preview-inner">
               <WeddingSite data={{ ...live, wedding: publicWedding(wedding), design, invitation: null }} phase={phase} mode="preview" today={today} />
             </div>
           </div>
-          <div className="shortcuts">
-            <Link href={`/painel/${id}/convidados`}>Convidados</Link>
-            <Link href={`/painel/${id}/programacao`}>Programação</Link>
-            <Link href={`/painel/${id}/juntos`}>Memórias</Link>
-            <Link href={`/painel/${id}/configuracoes`}>Fases e QR Code</Link>
+          <div className="row-actions">
+            <Link href={`${base}/site`} className="btn primary">
+              Continuar editando
+            </Link>
+            {wedding.published && (
+              <>
+                <a href={`/c/${wedding.slug}`} target="_blank" rel="noopener noreferrer" className="btn ghost">
+                  Ver o site
+                </a>
+                <CopyLinkButton path={`/c/${wedding.slug}`} label="Copiar link" className="text-link" />
+              </>
+            )}
           </div>
         </section>
+
+        <div className="home-links">
+          <Link href={`${base}/convidados`} className="home-link">
+            <span className="mono">Convidados</span>
+            <strong>{answers ? `${confirmed} ${confirmed === 1 ? "confirmado" : "confirmados"}` : "Convites e confirmações"}</strong>
+            <span className="muted small">{answers ? `${waiting} ${waiting === 1 ? "aguardando resposta" : "aguardando resposta"}` : "Compartilhem o link e acompanhem as respostas."}</span>
+          </Link>
+          <Link href={`${base}/memorias`} className={`home-link${memoriesMoment || toReview ? " highlight" : " quiet"}`}>
+            <span className="mono">Nossas memórias</span>
+            <strong>
+              {toReview
+                ? `${toReview} ${toReview === 1 ? "memória para revisar" : "memórias para revisar"}`
+                : wedding.accepting_contributions
+                  ? "Recebendo fotos e mensagens"
+                  : "Fotos e mensagens dos convidados"}
+            </strong>
+            <span className="muted small">
+              {wedding.accepting_contributions ? "Vocês aprovam tudo antes de aparecer." : memoriesMoment ? "Este é um bom momento para ativar." : "Ativem quando quiserem, perto do casamento."}
+            </span>
+          </Link>
+          <Link href={`${base}/site?aba=textos`} className="home-link quiet">
+            <span className="mono">Informações do evento</span>
+            <strong>{live.schedule.length ? `${live.schedule.length} ${live.schedule.length === 1 ? "item na programação" : "itens na programação"}` : "Programação e locais"}</strong>
+            <span className="muted small">Textos, cerimônia, recepção e programação.</span>
+          </Link>
+        </div>
       </div>
+
+      <details className="card home-tasks">
+        <summary>
+          <h2>Lista de tarefas</h2>
+          <span className="muted small">{tasks.filter((t) => !t.done).length} pendentes</span>
+        </summary>
+        <TaskList weddingId={id} initial={tasks} />
+      </details>
     </div>
   );
 }

@@ -124,32 +124,6 @@ export default function SettingsManager({ wedding, autoPhase, publicUrl, qrSvg }
       </section>
 
       <section className="card">
-        <h2>Participação dos convidados</h2>
-        <label className="check">
-          <input id="set-contrib" type="checkbox" checked={w.accepting_contributions} onChange={(e) => save({ accepting_contributions: e.target.checked }, e.target.checked ? "Recebendo contribuições." : "Contribuições pausadas.")} />
-          <span>Receber lembranças, fotos e mensagens (tudo passa pela aprovação de vocês)</span>
-        </label>
-        <label className="check">
-          <input id="set-rsvp" type="checkbox" checked={w.open_rsvp} onChange={(e) => save({ open_rsvp: e.target.checked }, e.target.checked ? "Confirmação aberta ligada." : "Agora só convites individuais confirmam presença.")} />
-          <span>Qualquer pessoa com o link do site pode confirmar presença</span>
-        </label>
-        <form
-          className="inline-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const v = String(new FormData(e.currentTarget).get("capsule") || "") || null;
-            save({ capsule_open_date: v }, v ? "Data da cápsula salva." : "Cápsula sem data de abertura.");
-          }}
-        >
-          <label className="field inline">
-            <span>Abertura da cápsula do tempo</span>
-            <input id="set-capsule" name="capsule" type="date" defaultValue={w.capsule_open_date ?? ""} />
-          </label>
-          <button className="btn ghost small">Salvar data</button>
-        </form>
-      </section>
-
-      <section className="card">
         <h2>Dados do casamento</h2>
         <form
           className="form"

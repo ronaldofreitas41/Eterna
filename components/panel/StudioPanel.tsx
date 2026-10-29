@@ -11,12 +11,12 @@ import ReferenceUploader, { type RefView } from "./ReferenceUploader";
 type Msg = { id: string; role: "user" | "assistant"; content: string; proposals: Proposal[]; simulated: boolean };
 
 const EXAMPLES = [
-  "Quero fundo marfim, verde sálvia, flores delicadas e a história como linha do tempo. Sofisticado, minimalista e emocional.",
   "Deixe o site mais minimalista.",
+  "Quero mais verde e menos bege.",
   "Troque as flores por folhagens.",
-  "Use as cores da referência 1.",
-  "Mantenha a tipografia, mas mude a composição.",
-  "Crie uma versão mais clássica.",
+  "Deixe a página mais romântica.",
+  "Quero uma capa mais impactante.",
+  "Use as cores da imagem 1.",
   "Volte para a versão anterior.",
 ];
 
@@ -41,7 +41,10 @@ export default function StudioPanel({ api, weddingId, refs, initialMessages, aiE
   const [applied, setApplied] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => endRef.current?.scrollIntoView({ block: "nearest" }), [messages.length]);
+  // scrollIntoView pode devolver uma Promise nos navegadores atuais: o efeito não pode retorná-la.
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: "nearest" });
+  }, [messages.length]);
 
   // Conversa atualizada no servidor (outro aparelho): substitui a lista, exceto durante um pedido em andamento.
   useEffect(() => {
@@ -52,7 +55,7 @@ export default function StudioPanel({ api, weddingId, refs, initialMessages, aiE
 
   async function persist(rows: Omit<Msg, "id">[]) {
     const res = await addStudioMessages(weddingId, rows);
-    if (!res.ok) api.notify("A conversa não foi salva no histórico, mas as propostas continuam aqui.", false);
+    if (!res.ok) api.notify("A conversa não foi guardada no histórico, mas as opções continuam aqui.", false);
   }
 
   async function send(text: string) {
@@ -100,69 +103,30 @@ export default function StudioPanel({ api, weddingId, refs, initialMessages, aiE
     const next = applyProposal(api.design, p, locks);
     api.update(next);
     setApplied(p.label);
-    await api.saveVersion(`Estúdio: ${p.label}`, "estudio", next);
-    api.notify(`Proposta “${p.label}” aplicada. Salvem o rascunho ou publiquem quando estiverem prontos.`);
+    await api.saveVersion(`Assistente: ${p.label}`, "estudio", next);
+    api.notify(`Pronto! O site agora usa “${p.label}”.`);
   }
 
   return (
     <div className="side-panel studio">
       {!aiEnabled && (
         <p className="notice demo" role="note">
-          <strong>Modo demonstrativo.</strong> A geração por IA está simulada: o estúdio entende comandos comuns e aplica mudanças
-          reais no design. Para usar a IA, configurem AI_API_KEY com uma chave gratuita do Google Gemini (veja o README).
+          <strong>Assistente em demonstração.</strong> Ele entende pedidos simples, como os exemplos abaixo, e muda o site de verdade.
+          Para pedidos com as palavras de vocês, o assistente de criação precisa ser configurado.
         </p>
       )}
 
-      <details className="studio-block" open={refs.length === 0}>
-        <summary>
-          <h3 className="sub">Referências visuais</h3>
-        </summary>
-        <ReferenceUploader
-          weddingId={weddingId}
-          initial={refs}
-          onPalettes={setRefPalettes}
-          onUsePalette={(palette, n) => {
-            if (locks.has("palette")) return api.notify("As cores estão travadas. Destravem para trocar.", false);
-            api.update((d) => ({ ...d, theme: { ...d.theme, palette } }));
-            api.notify(`Cores da referência ${n} aplicadas.`);
-          }}
-        />
-      </details>
-
-      <div className="studio-block">
-        <h3 className="sub">Manter como está</h3>
-        <div className="chip-toggles" role="group" aria-label="Elementos travados">
-          {(Object.keys(LOCKABLE) as LockKey[]).map((k) => (
-            <button
-              key={k}
-              type="button"
-              aria-pressed={locks.has(k)}
-              onClick={() =>
-                setLocks((s) => {
-                  const n = new Set(s);
-                  if (n.has(k)) n.delete(k);
-                  else n.add(k);
-                  return n;
-                })
-              }
-            >
-              {locks.has(k) ? "Travado: " : ""}
-              {LOCKABLE[k]}
-            </button>
-          ))}
-        </div>
-        <p className="muted small">O que estiver travado não muda nas próximas propostas.</p>
-      </div>
-
       <div className="chat" aria-live="polite">
         {messages.length === 0 && (
-          <p className="muted">Contem como imaginam o site. Cada pedido gera propostas que vocês comparam na prévia antes de aplicar.</p>
+          <p className="muted">
+            Digam o que gostariam de mudar, do jeito que falariam com uma pessoa. A prévia mostra o resultado antes de vocês decidirem.
+          </p>
         )}
         {messages.map((m) => (
           <div key={m.id} className={`bubble ${m.role}`}>
             <span className="who">
-              {m.role === "user" ? "Vocês" : "Estúdio"}
-              {m.role === "assistant" && m.simulated && <span className="chip">simulado</span>}
+              {m.role === "user" ? "Vocês" : "Assistente"}
+              {m.role === "assistant" && m.simulated && <span className="chip">demonstração</span>}
             </span>
             <p>{m.content}</p>
             {m.proposals.length > 0 && (
@@ -178,10 +142,10 @@ export default function StudioPanel({ api, weddingId, refs, initialMessages, aiE
                     <p className="small">{p.summary}</p>
                     <div className="row-actions">
                       <button type="button" className="btn ghost small" onClick={() => api.preview(applyProposal(api.design, p, locks), p.label)}>
-                        Ver na prévia
+                        Ver como fica
                       </button>
                       <button type="button" className="btn primary small" onClick={() => apply(p)}>
-                        {applied === p.label ? "Aplicada" : "Aplicar"}
+                        {applied === p.label ? "Usando esta" : "Usar esta"}
                       </button>
                     </div>
                   </div>
@@ -190,7 +154,7 @@ export default function StudioPanel({ api, weddingId, refs, initialMessages, aiE
             )}
           </div>
         ))}
-        {busy && <div className="bubble assistant typing">O estúdio está criando as propostas…</div>}
+        {busy && <div className="bubble assistant typing">Preparando duas opções para vocês…</div>}
         <div ref={endRef} />
       </div>
 
@@ -202,14 +166,14 @@ export default function StudioPanel({ api, weddingId, refs, initialMessages, aiE
         }}
       >
         <label className="sr-only" htmlFor="studio-input">
-          Pedido para o estúdio
+          O que vocês querem mudar
         </label>
         <textarea
           id="studio-input"
           rows={3}
           maxLength={4000}
           value={input}
-          placeholder="Ex.: troque as flores por folhagens e deixe o menu centralizado"
+          placeholder="Ex.: quero mais verde e menos bege"
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -219,7 +183,7 @@ export default function StudioPanel({ api, weddingId, refs, initialMessages, aiE
           }}
         />
         <button className="btn primary" disabled={busy || !input.trim()}>
-          {busy ? "Criando…" : "Enviar"}
+          {busy ? "Preparando…" : "Pedir"}
         </button>
       </form>
       <div className="examples" aria-label="Exemplos de pedidos">
@@ -229,6 +193,45 @@ export default function StudioPanel({ api, weddingId, refs, initialMessages, aiE
           </button>
         ))}
       </div>
+
+      <details className="studio-block">
+        <summary>Imagens de referência</summary>
+        <ReferenceUploader
+          weddingId={weddingId}
+          initial={refs}
+          onPalettes={setRefPalettes}
+          onUsePalette={(palette, n) => {
+            if (locks.has("palette")) return api.notify("As cores estão mantidas como estão. Liberem em “Mais opções” para trocar.", false);
+            api.update((d) => ({ ...d, theme: { ...d.theme, palette } }));
+            api.notify(`Cores da imagem ${n} aplicadas.`);
+          }}
+        />
+      </details>
+
+      <details className="studio-block">
+        <summary>Mais opções</summary>
+        <p className="muted small">Escolham o que deve continuar igual nos próximos pedidos.</p>
+        <div className="chip-toggles" role="group" aria-label="Manter como está">
+          {(Object.keys(LOCKABLE) as LockKey[]).map((k) => (
+            <button
+              key={k}
+              type="button"
+              aria-pressed={locks.has(k)}
+              onClick={() =>
+                setLocks((s) => {
+                  const n = new Set(s);
+                  if (n.has(k)) n.delete(k);
+                  else n.add(k);
+                  return n;
+                })
+              }
+            >
+              {locks.has(k) ? "Manter: " : ""}
+              {LOCKABLE[k]}
+            </button>
+          ))}
+        </div>
+      </details>
     </div>
   );
 }

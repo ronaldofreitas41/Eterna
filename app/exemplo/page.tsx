@@ -16,7 +16,7 @@ export default function ExemploPage() {
         </Link>
         <span className="mono">Casamento fictício de demonstração · formulários desativados</span>
         <Link href="/entrar?modo=criar" className="btn primary small">
-          Criar meu casamento
+          Criar meu site
         </Link>
       </div>
       <ExampleViewer data={demoSiteData()} />

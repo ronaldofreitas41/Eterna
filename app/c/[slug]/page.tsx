@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import WeddingSite from "@/components/site/WeddingSite";
 import LiveSync from "@/components/LiveSync";
 import { isDatabaseConfigured, one } from "@/lib/db";
-import { formatLongDate, resolvePhase } from "@/lib/phase";
+import { formatLongDate, resolvePhase, todayInBrazil } from "@/lib/phase";
 import { loadPublicSite } from "@/lib/site";
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ convite?: string }> };
@@ -29,7 +29,7 @@ export default async function PublicWeddingPage({ params, searchParams }: Props)
   const data = await loadPublicSite(slug, convite ?? null);
   if (!data) notFound();
 
-  const today = new Date();
+  const today = todayInBrazil();
   return (
     <main className="public-site">
       {data.wedding.is_demo && <p className="demo-ribbon">Casamento de demonstração · dados fictícios</p>}

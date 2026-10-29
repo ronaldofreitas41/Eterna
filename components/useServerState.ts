@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
  */
 export function useServerState<T>(server: T) {
   const [value, setValue] = useState(server);
-  useEffect(() => setValue(server), [server]);
+  useEffect(() => {
+    setValue(server);
+  }, [server]);
   return [value, setValue] as const;
 }

@@ -7,6 +7,15 @@ export function parseDate(iso: string | null): Date | null {
   return new Date(y, m - 1, d);
 }
 
+/**
+ * Data de hoje no horário de Brasília, como data local à meia-noite.
+ * O servidor (Vercel) roda em UTC: sem isso, depois das 21h a contagem regressiva adiantaria um dia.
+ */
+export function todayInBrazil(now = new Date()) {
+  const ymd = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+  return parseDate(ymd)!;
+}
+
 function startOfDay(d: Date) {
   const c = new Date(d);
   c.setHours(0, 0, 0, 0);
@@ -18,7 +27,7 @@ export function daysBetween(from: Date, to: Date) {
 }
 
 /** Fase exibida no site. Em "auto", segue a data: antes do dia, no dia, depois do dia. */
-export function resolvePhase(setting: PhaseSetting, weddingDate: string | null, today = new Date()): SitePhase {
+export function resolvePhase(setting: PhaseSetting, weddingDate: string | null, today = todayInBrazil()): SitePhase {
   if (setting !== "auto") return setting;
   const date = parseDate(weddingDate);
   if (!date) return "antes";

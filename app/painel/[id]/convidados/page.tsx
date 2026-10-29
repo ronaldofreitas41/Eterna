@@ -19,16 +19,15 @@ export default async function ConvidadosPage({ params }: { params: Promise<{ id:
         <div>
           <h1>Convidados</h1>
           <p className="lede">
-            Organizem por grupos. Cada convidado recebe um link próprio, com as informações e permissões do grupo dele.
+            Compartilhem o link do site e acompanhem quem confirmou, quem não poderá ir e quem ainda não respondeu.
           </p>
         </div>
       </header>
-      {!wedding.published && (
-        <p className="notice">Os links de convite só funcionam depois que o site for publicado (em Editor do site → Publicar).</p>
-      )}
       <GuestsManager
         weddingId={id}
         slug={wedding.slug}
+        published={wedding.published}
+        openRsvp={wedding.open_rsvp}
         initialGroups={groups}
         initialGuests={guests}
         initialRsvps={rsvps}

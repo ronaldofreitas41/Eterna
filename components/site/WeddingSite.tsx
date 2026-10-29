@@ -65,7 +65,7 @@ export default function WeddingSite({ data, phase, mode, today }: Props) {
 
   const has: Record<SectionId, boolean> = {
     countdown: daysLeft !== null && daysLeft > 0,
-    live: Boolean(w.live_notice || w.mission),
+    live: Boolean(w.live_notice || w.mission || (mode === "live" && w.accepting_contributions)),
     thanks: Boolean(c.thankYou),
     story: Boolean(c.story),
     timeline: c.timeline.length > 0,
@@ -77,7 +77,7 @@ export default function WeddingSite({ data, phase, mode, today }: Props) {
     rsvp: Boolean(invitation || w.open_rsvp),
     gifts: c.gifts.length > 0 || Boolean(c.giftsNote),
     faq: c.faq.length > 0,
-    gallery: true,
+    gallery: w.accepting_contributions || data.photos.length > 0,
     together: w.accepting_contributions || data.chapters.some((ch) => ch.entries.length),
     guestbook: w.accepting_contributions || data.guestbook.length > 0,
     capsule: Boolean(w.capsule_open_date),
@@ -106,6 +106,15 @@ export default function WeddingSite({ data, phase, mode, today }: Props) {
               <div className="s-card">
                 <span className="s-k">Missão de hoje</span>
                 <p>{w.mission}</p>
+              </div>
+            )}
+            {mode === "live" && w.accepting_contributions && (
+              <div className="s-card">
+                <span className="s-k">Fotos e mensagens</span>
+                <p>Compartilhem as fotos de hoje e deixem um recado para o casal.</p>
+                <a className="s-btn" href={`/c/${w.slug}/memorias${invitation ? `?convite=${invitation.token}` : ""}`}>
+                  Enviar fotos e mensagens
+                </a>
               </div>
             )}
           </section>

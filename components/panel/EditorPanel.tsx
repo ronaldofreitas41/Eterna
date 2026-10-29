@@ -26,8 +26,12 @@ const PALETTE_LABELS: Record<keyof Palette, string> = {
   accent: "Destaque",
 };
 
-export default function EditorPanel({ api }: { api: WorkspaceApi }) {
-  const [tab, setTab] = useState<(typeof TABS)[number]>("Componentes");
+export type EditorTab = (typeof TABS)[number];
+
+/** Com `only`, mostra uma única aba (a escolha fica com quem usa o painel). */
+export default function EditorPanel({ api, only }: { api: WorkspaceApi; only?: EditorTab }) {
+  const [chosen, setTab] = useState<EditorTab>("Componentes");
+  const tab = only ?? chosen;
   const { design, update } = api;
   const { theme, content } = design;
   const setTheme = (patch: Partial<typeof theme>) => update((d) => ({ ...d, theme: { ...d.theme, ...patch } }));
@@ -36,13 +40,15 @@ export default function EditorPanel({ api }: { api: WorkspaceApi }) {
 
   return (
     <div className="side-panel">
-      <div className="seg wide" role="tablist" aria-label="Editor">
-        {TABS.map((t) => (
-          <button key={t} type="button" role="tab" aria-selected={tab === t} aria-pressed={tab === t} onClick={() => setTab(t)}>
-            {t}
-          </button>
-        ))}
-      </div>
+      {!only && (
+        <div className="seg wide" role="tablist" aria-label="Editor">
+          {TABS.map((t) => (
+            <button key={t} type="button" role="tab" aria-selected={tab === t} aria-pressed={tab === t} onClick={() => setTab(t)}>
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
 
       {tab === "Componentes" && (
         <div className="stack">

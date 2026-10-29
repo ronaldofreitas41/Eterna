@@ -1,7 +1,7 @@
 "use client";
 
 import DesignWorkspace, { type VersionRow } from "@/components/panel/DesignWorkspace";
-import StudioPanel from "@/components/panel/StudioPanel";
+import SitePanel from "@/components/panel/SitePanel";
 import type { RefView } from "@/components/panel/ReferenceUploader";
 import type { SiteDesign } from "@/lib/design";
 import type { SiteData } from "@/lib/site";
@@ -15,12 +15,15 @@ type Props = {
   refs: RefView[];
   messages: StudioMessage[];
   aiEnabled: boolean;
+  initialTab?: "pedir" | "textos" | "aparencia" | "secoes";
 };
 
-export default function StudioWorkspace({ wedding, design, versions, live, refs, messages, aiEnabled }: Props) {
+export default function SiteWorkspace({ wedding, design, versions, live, refs, messages, aiEnabled, initialTab }: Props) {
   return (
     <DesignWorkspace wedding={wedding} initialDesign={design} initialVersions={versions} live={live}>
-      {(api) => <StudioPanel api={api} weddingId={wedding.id} refs={refs} initialMessages={messages} aiEnabled={aiEnabled} />}
+      {(api) => (
+        <SitePanel api={api} weddingId={wedding.id} refs={refs} messages={messages} aiEnabled={aiEnabled} coverUrl={live.coverUrl} initialTab={initialTab} />
+      )}
     </DesignWorkspace>
   );
 }

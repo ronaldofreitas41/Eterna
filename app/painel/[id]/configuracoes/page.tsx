@@ -19,8 +19,8 @@ export default async function ConfiguracoesPage({ params }: { params: Promise<{ 
     <div className="page">
       <header className="page-head">
         <div>
-          <h1>Fases e configurações</h1>
-          <p className="lede">Controlem em que momento o site está, o que os convidados podem enviar e os dados do casamento.</p>
+          <h1>Configurações</h1>
+          <p className="lede">Fase do site, QR Code, dados do casamento e privacidade.</p>
         </div>
       </header>
       <SettingsManager wedding={wedding} autoPhase={resolvePhase("auto", wedding.wedding_date)} publicUrl={publicUrl} qrSvg={qrSvg} />

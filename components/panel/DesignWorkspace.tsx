@@ -43,10 +43,15 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
   const [publishedId, setPublishedId] = useState(wedding.published_version_id);
   const [override, setOverride] = useState<{ design: SiteDesign; label: string } | null>(null);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  // No celular, uma coisa por vez: editar ou ver o site.
+  const [pane, setPane] = useState<"editar" | "previa">("editar");
   const [phase, setPhase] = useState<SitePhase>(() => resolvePhase(wedding.phase, wedding.wedding_date));
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [showVersions, setShowVersions] = useState(false);
+  const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
+  // Rascunhos salvos por esta tela: quando o servidor devolve um deles, não é alteração de outro aparelho.
+  const ownSaves = useRef<string[]>([JSON.stringify(initialDesign)]);
 
   const dirty = !sameDesign(design, saved);
   const [remote, setRemote] = useState<SiteDesign | null>(null);
@@ -56,7 +61,7 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
   useEffect(() => {
     if (sameDesign(initialDesign, lastServer.current)) return;
     lastServer.current = initialDesign;
-    if (sameDesign(initialDesign, saved)) return; // é o próprio salvamento desta tela
+    if (ownSaves.current.includes(JSON.stringify(initialDesign))) return; // é um salvamento desta tela
     if (dirty) {
       setRemote(initialDesign); // não sobrescreve o que está sendo editado aqui
     } else {
@@ -69,7 +74,9 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
     // Só reage a mudanças vindas do servidor.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialDesign]);
-  useEffect(() => setVersions(initialVersions), [initialVersions]);
+  useEffect(() => {
+    setVersions(initialVersions);
+  }, [initialVersions]);
   useEffect(() => {
     setPublished(wedding.published);
     setPublishedId(wedding.published_version_id);
@@ -130,13 +137,31 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
 
-  async function onSave() {
-    setBusy("save");
-    const res = await saveDraft(wedding.id, design);
-    setBusy(null);
-    if (!res.ok) return notify(res.error, false);
-    setSaved(design);
-    notify("Rascunho salvo. O site público só muda quando vocês publicarem.");
+  // Salvamento automático do rascunho, um instante depois da última alteração.
+  async function persist(snapshot: SiteDesign) {
+    setSaveState("saving");
+    const res = await saveDraft(wedding.id, snapshot);
+    if (!res.ok) return setSaveState("error");
+    ownSaves.current = [...ownSaves.current.slice(-9), JSON.stringify(snapshot)];
+    setSaved(snapshot);
+    setSaveState("saved");
+  }
+  useEffect(() => {
+    if (!dirty || remote) return;
+    const t = window.setTimeout(() => persist(design), 1200);
+    return () => window.clearTimeout(t);
+    // persist muda a cada render; o que importa é o design.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [design, dirty, remote]);
+
+  async function share() {
+    const link = `${location.origin}/c/${wedding.slug}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      notify("Link do site copiado. É só colar na conversa com os convidados.");
+    } catch {
+      window.prompt("Copiem o link do site:", link);
+    }
   }
 
   const saveVersion: WorkspaceApi["saveVersion"] = async (label, source, d = design) => {
@@ -154,11 +179,12 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
     const res = await publishSite(wedding.id, design);
     setBusy(null);
     if (!res.ok) return notify(res.error, false);
+    ownSaves.current = [...ownSaves.current.slice(-9), JSON.stringify(design)];
     setSaved(design);
     setVersions((v) => [res.data, ...v]);
     setPublished(true);
     setPublishedId(res.data.id);
-    notify(`Site publicado em /c/${wedding.slug}.`);
+    notify(published ? "Site atualizado. Os convidados já veem as mudanças." : "Site publicado! Agora é só compartilhar o link.");
     router.refresh();
   }
 
@@ -175,14 +201,17 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
   function restore(v: VersionRow) {
     update(parseDesign(v.snapshot));
     setShowVersions(false);
-    notify("Versão restaurada na prévia. Salvem o rascunho para manter ou publiquem para os convidados verem.");
+    notify("Versão restaurada. Publiquem quando quiserem que os convidados vejam.");
   }
 
   const api: WorkspaceApi = {
     design,
     update,
     undo,
-    preview: (d, label = "Proposta") => setOverride(d ? { design: d, label } : null),
+    preview: (d, label = "Proposta") => {
+      setOverride(d ? { design: d, label } : null);
+      if (d) setPane("previa");
+    },
     saveVersion,
     notify,
   };
@@ -191,6 +220,14 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
 
   return (
     <div className="workspace">
+      <div className="seg wide pane-switch" role="group" aria-label="Mostrar">
+        <button type="button" aria-pressed={pane === "editar"} onClick={() => setPane("editar")}>
+          Editar
+        </button>
+        <button type="button" aria-pressed={pane === "previa"} onClick={() => setPane("previa")}>
+          Ver o site
+        </button>
+      </div>
       <div className="ws-toolbar" role="toolbar" aria-label="Ações do site">
         <div className="ws-group">
           <button type="button" className="btn ghost small" onClick={undo} disabled={!past.length} title="Desfazer (Ctrl+Z)">
@@ -199,12 +236,9 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
           <button type="button" className="btn ghost small" onClick={redo} disabled={!future.length} title="Refazer (Ctrl+Shift+Z)">
             Refazer
           </button>
-          <button type="button" className="btn ghost small" aria-expanded={showVersions} onClick={() => setShowVersions((s) => !s)}>
-            Versões
-          </button>
         </div>
         <div className="ws-group">
-          <div className="seg" role="group" aria-label="Dispositivo da prévia">
+          <div className="seg" role="group" aria-label="Ver no">
             <button type="button" aria-pressed={device === "desktop"} onClick={() => setDevice("desktop")}>
               Computador
             </button>
@@ -215,24 +249,49 @@ export default function DesignWorkspace({ wedding, initialDesign, initialVersion
           <PhaseSwitch value={phase} onChange={setPhase} />
         </div>
         <div className="ws-group">
-          <span className={`ws-status${dirty ? " dirty" : ""}`} aria-live="polite">
-            {dirty ? "Alterações não salvas" : differsFromPublished ? "Rascunho salvo, ainda não publicado" : published ? "Publicado" : "Rascunho salvo"}
+          <span className={`ws-status ${saveState === "error" ? "dirty" : ""}`} aria-live="polite">
+            {saveState === "error" ? (
+              <button type="button" className="text-link danger small" onClick={() => persist(design)}>
+                Não foi possível salvar. Tentar de novo
+              </button>
+            ) : saveState === "saving" || dirty ? (
+              "Salvando…"
+            ) : differsFromPublished ? (
+              "Salvo · mudanças ainda não publicadas"
+            ) : (
+              "Tudo salvo"
+            )}
           </span>
-          <button type="button" className="btn ghost small" onClick={onSave} disabled={!dirty || busy !== null}>
-            {busy === "save" ? "Salvando…" : "Salvar rascunho"}
-          </button>
           <button type="button" className="btn primary small" onClick={onPublish} disabled={busy !== null || (published && !dirty && !differsFromPublished)}>
-            {busy === "publish" ? "Publicando…" : published ? "Atualizar site publicado" : "Publicar"}
+            {busy === "publish" ? "Publicando…" : published ? "Atualizar o site" : "Publicar"}
           </button>
           {published && (
-            <button type="button" className="text-link small" onClick={onUnpublish} disabled={busy !== null}>
-              Despublicar
+            <button type="button" className="btn ghost small" onClick={share}>
+              Compartilhar
             </button>
           )}
+          <details className="more-menu">
+            <summary className="btn ghost small">Mais</summary>
+            <div className="more-menu-list">
+              <button type="button" onClick={() => setShowVersions((v) => !v)}>
+                {showVersions ? "Fechar versões" : "Versões anteriores"}
+              </button>
+              {published && (
+                <a href={`/c/${wedding.slug}`} target="_blank" rel="noopener noreferrer">
+                  Abrir o site publicado
+                </a>
+              )}
+              {published && (
+                <button type="button" className="danger" onClick={onUnpublish} disabled={busy !== null}>
+                  Tirar o site do ar
+                </button>
+              )}
+            </div>
+          </details>
         </div>
       </div>
 
-      <div className="ws-body">
+      <div className={`ws-body pane-${pane}`}>
         <div className="ws-side">
           {showVersions ? (
             <VersionsPanel

@@ -30,7 +30,8 @@ const run = process.env.DATABASE_URL ? describe : describe.skip;
 run("integração com o PostgreSQL", async () => {
   const { query, one } = await import("@/lib/db");
   const { signUp } = await import("@/app/entrar/actions");
-  const { createWeddingFromOnboarding } = await import("@/app/painel/actions");
+  const { startWedding } = await import("@/app/painel/actions");
+  const criar = await import("@/app/painel/acoes/criar");
   const guests = await import("@/app/painel/acoes/convidados");
   const juntos = await import("@/app/painel/acoes/juntos");
   const design = await import("@/app/painel/acoes/design");
@@ -63,23 +64,24 @@ run("integração com o PostgreSQL", async () => {
     await signup("a");
     await signup("b");
     as("a");
-    const res = await createWeddingFromOnboarding({
+    const res = await startWedding({
       partnerOne: "Teste",
       partnerTwo: `Integração ${tag}`,
       date: "2030-01-01",
       city: "",
       venue: "",
       presetId: "botanico",
-      style: "",
-      palette: null,
-      phaseMode: "auto",
-      acceptingContributions: true,
-      openRsvp: true,
-      capsuleDate: "2031-01-01",
-      features: ["rsvp", "together", "gallery", "guestbook", "capsule"],
+      gifts: true,
     });
     expect(res.error).toBeUndefined();
     weddingA = res.id!;
+    // Memórias começam desligadas; a noiva ativa quando quiser.
+    const start = await one<{ accepting_contributions: boolean }>("select accepting_contributions from weddings where id = $1", [weddingA]);
+    expect(start!.accepting_contributions).toBe(false);
+    expect((await settings.updateSettings(weddingA, { capsule_open_date: "2031-01-01" })).ok).toBe(true);
+    expect((await criar.setMemories(weddingA, true)).ok).toBe(true);
+    const invited = await juntos.createCampaign(weddingA, { title: "Só para convidados", prompt: "", kind: "memory", audience: "invited", group_ids: [], active: true });
+    expect(invited.ok).toBe(true);
     slugA = (await one<{ slug: string }>("select slug from weddings where id = $1", [weddingA]))!.slug;
   });
 

@@ -20,8 +20,8 @@ import {
 } from "@/lib/demo";
 import { ownedWeddingOrThrow } from "@/lib/panel";
 import { presetById } from "@/lib/presets";
-import { SECTION_IDS, SectionId } from "@/lib/sections";
-import { DEFAULT_THEME, HEX, Theme } from "@/lib/theme";
+import { SECTION_IDS } from "@/lib/sections";
+import { DEFAULT_THEME, Theme } from "@/lib/theme";
 
 function slugify(s: string) {
   return s
@@ -56,43 +56,37 @@ async function insertWedding(db: PoolClient, row: Record<string, unknown>, baseS
 }
 
 // ---------------------------------------------------------------------------
-// Onboarding
+// Primeiro acesso
 // ---------------------------------------------------------------------------
 
 const DATE = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable();
-const Onboarding = z.object({
+const Start = z.object({
   partnerOne: z.string().trim().min(1).max(80),
   partnerTwo: z.string().trim().min(1).max(80),
   date: DATE,
-  city: z.string().trim().max(120),
   venue: z.string().trim().max(160),
+  city: z.string().trim().max(120),
   presetId: z.string().nullable(),
-  style: z.string().trim().max(400),
-  palette: z.object({ background: z.string(), surface: z.string(), ink: z.string(), muted: z.string(), accent: z.string() }).nullable(),
-  phaseMode: z.enum(["auto", "antes"]),
-  acceptingContributions: z.boolean(),
-  openRsvp: z.boolean(),
-  capsuleDate: DATE,
-  features: z.array(z.string()),
+  gifts: z.boolean(),
 });
-export type OnboardingInput = z.infer<typeof Onboarding>;
+export type StartInput = z.infer<typeof Start>;
 
 const DEFAULT_CHAPTER_TITLES = ["Antes de se conhecerem", "O encontro", "Conselhos para a vida a dois"];
-// Funcionalidades opcionais do onboarding. As seções básicas (capa, história, programação...) ficam sempre ligadas.
-const OPTIONAL: SectionId[] = ["rsvp", "gifts", "together", "gallery", "guestbook", "capsule", "faq", "timeline", "logistics"];
 
-export async function createWeddingFromOnboarding(input: OnboardingInput): Promise<{ id?: string; error?: string }> {
-  const parsed = Onboarding.safeParse(input);
-  if (!parsed.success) return { error: "Preencham o nome dos dois noivos." };
+/**
+ * Cria o casamento só com o essencial. Memórias compartilhadas começam desligadas
+ * (a noiva ativa quando quiser) e as fases seguem a data automaticamente.
+ */
+export async function startWedding(input: StartInput): Promise<{ id?: string; error?: string }> {
+  const parsed = Start.safeParse(input);
+  if (!parsed.success) return { error: "Preencham o nome de vocês dois para continuar." };
   const o = parsed.data;
   const user = await requireUser();
 
   const base: Theme = presetById(o.presetId ?? "")?.theme ?? DEFAULT_THEME;
-  const palette = o.palette && Object.values(o.palette).every((v) => HEX.test(v)) ? (o.palette as Theme["palette"]) : base.palette;
-  const features = new Set(o.features.filter((f): f is SectionId => (SECTION_IDS as string[]).includes(f)));
   const design: SiteDesign = {
-    theme: { ...base, palette },
-    sections: SECTION_IDS.map((id) => ({ id, enabled: !OPTIONAL.includes(id) || features.has(id) })),
+    theme: base,
+    sections: SECTION_IDS.map((id) => ({ id, enabled: id !== "gifts" || o.gifts })),
     content: DEFAULT_CONTENT,
   };
 
@@ -105,38 +99,24 @@ export async function createWeddingFromOnboarding(input: OnboardingInput): Promi
           partner_one: o.partnerOne,
           partner_two: o.partnerTwo,
           wedding_date: o.date,
-          city: o.city,
           venue: o.venue,
-          phase: o.phaseMode,
-          accepting_contributions: o.acceptingContributions,
-          open_rsvp: o.openRsvp,
-          capsule_open_date: o.capsuleDate,
+          city: o.city,
+          accepting_contributions: false,
           onboarding_done: true,
         },
         slugify(`${o.partnerOne}-e-${o.partnerTwo}`),
       );
-      await query("insert into wedding_drafts (wedding_id, design, style) values ($1, $2, $3)", [id, design, o.style], db);
+      await query("insert into wedding_drafts (wedding_id, design) values ($1, $2)", [id, design], db);
       await query("insert into wedding_logistics (wedding_id) values ($1)", [id], db);
       for (const [position, title] of DEFAULT_CHAPTER_TITLES.entries())
         await query("insert into story_chapters (wedding_id, title, position) values ($1, $2, $3)", [id, title, position], db);
-      if (features.has("together"))
-        for (const [position, c] of DEMO_CAMPAIGNS.entries())
-          await query("insert into campaigns (wedding_id, title, prompt, kind, audience, active, position) values ($1, $2, $3, $4, $5, $6, $7)", [
-            id,
-            c.title,
-            c.kind === "capsule" ? "Ela fica lacrada até a data escolhida pelos noivos." : c.prompt,
-            c.kind,
-            c.audience,
-            c.kind !== "capsule" || Boolean(o.capsuleDate),
-            position,
-          ], db);
       return id;
     });
     revalidatePath("/painel");
     return { id };
   } catch (err) {
-    console.error("[onboarding]", err);
-    return { error: "Não foi possível criar o casamento. Tentem de novo." };
+    console.error("[primeiro acesso]", err);
+    return { error: "Não foi possível começar agora. Tentem de novo." };
   }
 }
 

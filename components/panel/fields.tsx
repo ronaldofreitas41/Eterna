@@ -19,7 +19,9 @@ type TextProps = {
 
 export function TextField({ id, label, value, onCommit, maxLength, multiline, rows = 4, placeholder, hint, type = "text" }: TextProps) {
   const [local, setLocal] = useState(value);
-  useEffect(() => setLocal(value), [value]);
+  useEffect(() => {
+    setLocal(value);
+  }, [value]);
   const commit = () => local !== value && onCommit(local);
   return (
     <label className="field">

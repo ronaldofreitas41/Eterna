@@ -52,6 +52,21 @@ export function runDemoCommand(
     label = "Versão clássica";
     changes.push("usei serifas clássicas, composição centralizada e flores delicadas");
   }
+  if (/romant/.test(q)) {
+    theme = { ...theme, displayFont: "pinyon", bodyFont: "figtree", ornament: "florals", buttonStyle: "pill", navStyle: "pill" };
+    theme.palette = { ...theme.palette, accent: "#A8665C", surface: "#F3E6E0" };
+    label = "Mais romântico";
+    changes.push("usei caligrafia nos nomes, flores delicadas e um rosa antigo nos detalhes");
+  }
+  if (/capa/.test(q) && /impact|destaque|marcante|forte/.test(q)) {
+    theme = { ...theme, layout: "editorial", ornament: "none" };
+    label = "Capa impactante";
+    changes.push("deixei os nomes bem maiores, alinhados à esquerda, sem ornamentos disputando atenção");
+  }
+  if (/menos bege|sem bege/.test(q)) {
+    theme.palette = { ...theme.palette, background: "#FBFCF9", surface: "#E8EFE6" };
+    changes.push("troquei o bege por um branco esverdeado");
+  }
   if (/folhage|folhas/.test(q)) {
     theme.ornament = "foliage";
     changes.push("troquei os ornamentos por folhagens");
@@ -105,7 +120,7 @@ export function runDemoCommand(
       simulated: true,
       proposals: [],
       reply:
-        "No modo demonstrativo eu entendo comandos como: “deixe mais minimalista”, “crie uma versão mais clássica”, “troque as flores por folhagens”, “use as cores da referência 2”, “mude a composição”, “estilo romântico” ou “volte para a versão anterior”. Com a IA ligada, qualquer pedido funciona.",
+        "Na demonstração eu entendo pedidos como: “deixe o site mais minimalista”, “quero mais verde e menos bege”, “troque as flores por folhagens”, “deixe a página mais romântica”, “quero uma capa mais impactante” ou “volte para a versão anterior”. Com o assistente de criação configurado, vocês podem pedir com as próprias palavras.",
     };
 
   const primary: Proposal = { label, summary: capitalize(changes.join("; ")) + ".", theme, sectionOrder, content: {} };
@@ -121,7 +136,7 @@ export function runDemoCommand(
     sectionOrder,
     content: {},
   };
-  return { simulated: true, proposals: [primary, alternative], reply: "Preparei duas opções. Compare na prévia e aplique a que preferir." };
+  return { simulated: true, proposals: [primary, alternative], reply: "Preparei duas opções. Vejam como fica e usem a que preferirem." };
 }
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

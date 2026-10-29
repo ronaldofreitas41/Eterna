@@ -6,25 +6,24 @@ Plataforma de sites de casamento: os noivos criam a identidade visual com IA, os
 
 **Stack:** Next.js 16, React 19 e TypeScript, com PostgreSQL (Neon) acessado pelo driver `pg`. A IA usa o Google Gemini no plano gratuito, por uma API compatível com a da OpenAI, então dá para trocar de provedor.
 
-## O que já funciona
+## Como a experiência é organizada
 
-| Área | Rota |
-| --- | --- |
-| Landing com demonstração de paletas, planos e perguntas frequentes | `/` |
-| Site de exemplo (Helena & Rafael, fictício) nas três fases, sem banco | `/exemplo` |
-| Planos demonstrativos, em reais, sem cobrança | `/planos` |
-| Cadastro, login, saída e recuperação de senha | `/entrar` |
-| Onboarding em 6 etapas (só os nomes são obrigatórios) | `/painel/novo` |
-| Casamento de demonstração completo, criado com um clique | `/painel` |
-| Painel com progresso, tarefas, números e prévia | `/painel/[id]` |
-| Estúdio criativo: referências (upload e link), duas propostas por pedido, travas, desfazer, versões | `/painel/[id]/estudio` |
-| Editor: componentes (ligar, desligar, reordenar), visual, textos, prévia em computador e celular, rascunho, publicação, versões | `/painel/[id]/editor` |
-| Convidados por grupo, convite individual, limite de acompanhantes, logística por permissão | `/painel/[id]/convidados` |
-| Programação de um ou vários dias; hospedagem e transporte protegidos | `/painel/[id]/programacao` |
-| Construir Juntos: campanhas por público, moderação, capítulos, apresentação editada, cápsula do tempo | `/painel/[id]/juntos` |
-| Galeria colaborativa com moderação e capa do site | `/painel/[id]/fotos` |
-| Fases (automática ou manual, sempre reversível), avisos ao vivo, QR Code, exportar e excluir dados | `/painel/[id]/configuracoes` |
-| Site público por casamento, com convite individual em `?convite=` | `/c/[slug]` |
+Uma ação principal por tela e recursos apresentados quando fazem sentido.
+
+| Área | Rota | O que a noiva faz |
+| --- | --- | --- |
+| Página inicial | `/` | Conhece a Eterna e toca em "Criar meu site" |
+| Criação guiada | `/painel/novo` | Em 3 etapas: o casamento (só os nomes são obrigatórios), o sonho (descrição e imagens) e a primeira versão real do site, com "Gostei, continuar", "Quero ajustar" e "Tentar outro estilo" |
+| Início | `/painel/[id]` | Vê a prévia, o status e um único "Próximo passo", escolhido pela situação e pela data do casamento |
+| Meu site | `/painel/[id]/site` | Pede mudanças em palavras ao assistente ou edita textos, aparência (incluindo a foto de capa) e seções. Salva sozinho, publica e compartilha. Versões ficam em "Mais" |
+| Convidados | `/painel/[id]/convidados` | Copia ou envia o link pelo WhatsApp, acompanha quem confirmou, recusou ou não respondeu e exporta a lista em CSV. Grupos são opcionais |
+| Memórias | `/painel/[id]/memorias` | Ativa quando quiser, mostra o QR Code e revisa mensagens, histórias e fotos antes de publicar |
+| Configurações | `/painel/[id]/configuracoes` | Fase do site, QR do site, dados do casamento, exportação e exclusão |
+| Site do casal | `/c/[slug]` | Os convidados veem o site e confirmam presença (convite individual em `?convite=`) |
+| Memórias do convidado | `/c/[slug]/memorias` | Abre pelo QR Code, escolhe como contribuir e envia, sem cadastro |
+| Exemplo | `/exemplo` | Site fictício nas três fases, sem banco de dados |
+
+Endereços antigos (`/editor`, `/estudio`, `/juntos`, `/fotos`) redirecionam para as áreas novas.
 
 ## Como rodar
 

@@ -17,15 +17,13 @@ type Props = {
 export default function PanelNav({ id, names, slug, published, isDemo, email, pending }: Props) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const base = `/painel/${id}`;
+  // Menu curto: o resto aparece dentro de cada área, quando faz sentido.
   const items = [
-    { href: `/painel/${id}`, label: "Visão geral" },
-    { href: `/painel/${id}/estudio`, label: "Estúdio criativo" },
-    { href: `/painel/${id}/editor`, label: "Editor do site" },
-    { href: `/painel/${id}/convidados`, label: "Convidados" },
-    { href: `/painel/${id}/programacao`, label: "Programação" },
-    { href: `/painel/${id}/juntos`, label: "Construir Juntos", badge: pending.juntos },
-    { href: `/painel/${id}/fotos`, label: "Fotos", badge: pending.fotos },
-    { href: `/painel/${id}/configuracoes`, label: "Fases e configurações" },
+    { href: base, label: "Início", also: [] as string[] },
+    { href: `${base}/site`, label: "Meu site", also: [`${base}/programacao`, `${base}/editor`, `${base}/estudio`] },
+    { href: `${base}/convidados`, label: "Convidados", also: [] },
+    { href: `${base}/memorias`, label: "Memórias", badge: pending.juntos + pending.fotos, also: [`${base}/juntos`, `${base}/fotos`] },
   ];
 
   return (
@@ -46,26 +44,33 @@ export default function PanelNav({ id, names, slug, published, isDemo, email, pe
         </span>
         {published && (
           <a href={`/c/${slug}`} target="_blank" rel="noopener noreferrer" className="text-link">
-            Abrir site público
+            Ver o site publicado
           </a>
         )}
       </div>
       <nav id="panel-menu" aria-label="Painel do casamento">
         {items.map((it) => {
-          const active = it.href === `/painel/${id}` ? path === it.href : path.startsWith(it.href);
+          const active = it.href === base ? path === base : path.startsWith(it.href) || it.also.some((a) => path.startsWith(a));
           return (
             <Link key={it.href} href={it.href} aria-current={active ? "page" : undefined} onClick={() => setOpen(false)}>
               {it.label}
-              {it.badge ? <span className="badge" aria-label={`${it.badge} aguardando`}>{it.badge}</span> : null}
+              {it.badge ? (
+                <span className="badge" aria-label={`${it.badge} aguardando revisão`}>
+                  {it.badge}
+                </span>
+              ) : null}
             </Link>
           );
         })}
       </nav>
       <div className="panel-nav-foot">
-        <span className="mono">{email}</span>
+        <Link href={`${base}/configuracoes`} className="text-link" onClick={() => setOpen(false)}>
+          Configurações
+        </Link>
         <Link href="/painel" className="text-link">
           Trocar de casamento
         </Link>
+        <span className="mono">{email}</span>
         <form action="/sair" method="post">
           <button className="text-link">Sair</button>
         </form>

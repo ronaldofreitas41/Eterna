@@ -1,5 +1,6 @@
 import type { SiteDesign } from "./design";
 import { DEFAULT_SECTIONS } from "./sections";
+import { EMPTY_PIX } from "./pix";
 import { PRESETS } from "./presets";
 import type { Audience, ContributionKind } from "./types";
 
@@ -47,6 +48,8 @@ export const DEMO_DESIGN: SiteDesign = {
       { title: "Cota da lua de mel", description: "Qualquer valor ajuda a gente a chegar em Portugal.", url: "", priceCents: null },
     ],
     giftsNote: "Sua presença é o melhor presente. Se quiser nos presentear, combine com os noivos a melhor forma.",
+    // Sem chave Pix: num casamento fictício, ninguém deve conseguir pagar.
+    pix: EMPTY_PIX,
     thankYou:
       "Obrigado por terem vivido esse dia com a gente. Cada abraço, foto e mensagem agora faz parte da nossa história.",
   },

@@ -9,6 +9,8 @@ import ScheduleList from "./ScheduleList";
 import RsvpForm from "./RsvpForm";
 import ContributionForm from "./ContributionForm";
 import PhotoUpload from "./PhotoUpload";
+import GiftPix from "./GiftPix";
+import { pixReady } from "@/lib/pix";
 
 export type SiteMode = "live" | "preview" | "demo";
 type Props = { data: SiteData; phase: SitePhase; mode: SiteMode; today: Date };
@@ -56,6 +58,7 @@ export default function WeddingSite({ data, phase, mode, today }: Props) {
   const daysLeft = date ? daysBetween(today, date) : null;
   const where = [w.venue, w.city].filter(Boolean).join(" · ");
   const names = `${w.partner_one || "Noiva"} & ${w.partner_two || "Noivo"}`;
+  const pix = pixReady(c.pix);
 
   const campaigns = data.campaigns.filter(
     (cp) =>
@@ -75,7 +78,7 @@ export default function WeddingSite({ data, phase, mode, today }: Props) {
     dresscode: Boolean(c.dressCode),
     logistics: Boolean(data.logistics && (data.logistics.accommodation || data.logistics.transport)),
     rsvp: Boolean(invitation || w.open_rsvp),
-    gifts: c.gifts.length > 0 || Boolean(c.giftsNote),
+    gifts: c.gifts.length > 0 || Boolean(c.giftsNote) || pix,
     faq: c.faq.length > 0,
     gallery: w.accepting_contributions || data.photos.length > 0,
     together: w.accepting_contributions || data.chapters.some((ch) => ch.entries.length),
@@ -228,25 +231,34 @@ export default function WeddingSite({ data, phase, mode, today }: Props) {
           <section key={id} className="s-section" id="gifts">
             <h2>Lista de presentes</h2>
             {c.giftsNote && <p className="s-muted">{c.giftsNote}</p>}
-            <ul className="s-gifts">
-              {c.gifts.map((g, i) => {
-                const url = safeUrl(g.url);
-                return (
-                  <li key={i}>
-                    <h3>{g.title}</h3>
-                    {g.description && <p>{g.description}</p>}
-                    <div className="s-gift-foot">
-                      {g.priceCents !== null && <span className="s-price">{formatBRL(g.priceCents)}</span>}
-                      {url && (
-                        <a href={url} target="_blank" rel="noopener noreferrer" className="s-link">
-                          Ver presente
-                        </a>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+            {c.gifts.length > 0 && (
+              <ul className="s-gifts">
+                {c.gifts.map((g, i) => {
+                  const url = safeUrl(g.url);
+                  return (
+                    <li key={i}>
+                      <h3>{g.title}</h3>
+                      {g.description && <p>{g.description}</p>}
+                      <div className="s-gift-foot">
+                        {g.priceCents !== null ? <span className="s-price">{formatBRL(g.priceCents)}</span> : pix && <span className="s-muted">Qualquer valor</span>}
+                        {url && (
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="s-link">
+                            Ver na loja
+                          </a>
+                        )}
+                      </div>
+                      {pix && <GiftPix pix={c.pix} amountCents={g.priceCents} title={g.title} />}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {pix && (
+              <div className="s-pix-free">
+                <p className="s-muted">{c.gifts.length ? "Prefere dar outro valor?" : "Se quiser nos presentear, pode ser por Pix, com o valor que quiser."}</p>
+                <GiftPix pix={c.pix} amountCents={null} title="Presente" label={c.gifts.length ? "Pix com outro valor" : "Presentear com Pix"} />
+              </div>
+            )}
           </section>
         );
       case "faq":

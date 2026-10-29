@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { Content, FaqEntry, Gift, TimelineEntry } from "@/lib/design";
+import { parseBRL, type Content, type FaqEntry, type Gift, type TimelineEntry } from "@/lib/design";
+import { PIX_KEY_TYPES, normalizePixKey, pixReady, type PixSettings } from "@/lib/pix";
 import { PRESETS } from "@/lib/presets";
 import { SECTIONS, moveSection } from "@/lib/sections";
 import {
@@ -17,7 +18,7 @@ import {
 import type { WorkspaceApi } from "./DesignWorkspace";
 import { Fold, ListEditor, SelectField, TextField } from "./fields";
 
-const TABS = ["Componentes", "Visual", "Textos"] as const;
+const TABS = ["Componentes", "Visual", "Textos", "Presentes"] as const;
 const PALETTE_LABELS: Record<keyof Palette, string> = {
   background: "Fundo",
   surface: "Blocos",
@@ -235,45 +236,108 @@ export default function EditorPanel({ api, only, extras }: { api: WorkspaceApi; 
           />
           </Fold>
 
-          <Fold title="Lista de presentes" hint={content.gifts.length ? `${content.gifts.length} presentes` : "Opcional"}>
-          <TextField id="t-gifts-note" label="Recado sobre presentes" value={content.giftsNote} maxLength={600} multiline rows={2} onCommit={(v) => setContent("giftsNote", v)} />
-          <ListEditor<Gift>
-            items={content.gifts}
-            max={60}
-            empty="Nenhum presente ainda."
-            addLabel="Adicionar presente"
-            make={() => ({ title: "Novo presente", description: "", url: "", priceCents: null })}
-            onChange={(v) => setContent("gifts", v)}
-            render={(g, set, i) => (
-              <>
-                <TextField id={`gift-t-${i}`} label="Presente" value={g.title} maxLength={120} onCommit={(title) => set({ ...g, title })} />
-                <TextField id={`gift-d-${i}`} label="Descrição" value={g.description} maxLength={400} onCommit={(description) => set({ ...g, description })} />
-                <div className="row2">
-                  <TextField
-                    id={`gift-p-${i}`}
-                    label="Valor (R$)"
-                    value={g.priceCents === null ? "" : (g.priceCents / 100).toFixed(2).replace(".", ",")}
-                    maxLength={12}
-                    placeholder="Opcional"
-                    live={false}
-                    onCommit={(v) => {
-                      const n = Number(v.replace(/\./g, "").replace(",", "."));
-                      set({ ...g, priceCents: v.trim() && Number.isFinite(n) && n >= 0 ? Math.round(n * 100) : null });
-                    }}
-                  />
-                  <TextField id={`gift-u-${i}`} label="Link da loja" type="url" value={g.url} maxLength={500} placeholder="https://" live={false} onCommit={(url) => set({ ...g, url })} />
-                </div>
-              </>
-            )}
-          />
-          <p className="muted small">A Eterna não processa pagamentos. Os links levam para a loja escolhida por vocês.</p>
-          </Fold>
-
           <Fold title="Agradecimento" hint="Aparece depois do casamento">
             <TextField id="t-thanks" label="Agradecimento final" value={content.thankYou} maxLength={3000} multiline rows={4} onCommit={(v) => setContent("thankYou", v)} />
           </Fold>
         </div>
       )}
+
+      {tab === "Presentes" && <GiftsEditor api={api} />}
+    </div>
+  );
+}
+
+const GIFT_IDEAS: Gift[] = [
+  { title: "Cota da lua de mel", description: "Qualquer valor ajuda a gente a viajar.", url: "", priceCents: null },
+  { title: "Jantar romântico", description: "Para comemorarmos a dois.", url: "", priceCents: 30000 },
+  { title: "Utensílios para a casa nova", description: "", url: "", priceCents: 15000 },
+  { title: "Passeio na viagem", description: "", url: "", priceCents: 20000 },
+];
+
+function GiftsEditor({ api }: { api: WorkspaceApi }) {
+  const { design, update } = api;
+  const { content } = design;
+  const pix = content.pix;
+  const setContent = <K extends keyof Content>(k: K, v: Content[K]) => update((d) => ({ ...d, content: { ...d.content, [k]: v } }));
+  const setPix = (patch: Partial<PixSettings>) => update((d) => ({ ...d, content: { ...d.content, pix: { ...d.content.pix, ...patch } } }));
+  const ready = pixReady(pix);
+  const keyOk = !pix.key.trim() || normalizePixKey(pix.type, pix.key) !== null;
+  const section = design.sections.find((s) => s.id === "gifts");
+
+  return (
+    <div className="stack">
+      <p className="muted small">Montem a lista e recebam os presentes por Pix, direto na conta de vocês. Sem taxas: o dinheiro não passa pela Eterna.</p>
+
+      {section && !section.enabled && (
+        <p className="notice" role="status">
+          A lista está escondida no site.{" "}
+          <button
+            type="button"
+            className="text-link"
+            onClick={() => update((d) => ({ ...d, sections: d.sections.map((s) => (s.id === "gifts" ? { ...s, enabled: true } : s)) }))}
+          >
+            Mostrar no site
+          </button>
+        </p>
+      )}
+
+      <Fold title="Como receber" hint={ready ? `Pix pronto · ${PIX_KEY_TYPES[pix.type]}` : "Configurem a chave Pix"} open={!ready}>
+        <SelectField id="pix-type" label="Tipo da chave Pix" value={pix.type} options={PIX_KEY_TYPES} onChange={(type) => setPix({ type })} />
+        <TextField
+          id="pix-key"
+          label="Chave Pix"
+          value={pix.key}
+          maxLength={80}
+          placeholder={pix.type === "email" ? "nome@email.com" : pix.type === "phone" ? "(11) 91234-5678" : pix.type === "cpf" ? "Só os números" : "Ex.: 123e4567-e89b-12d3-a456-426614174000"}
+          hint={keyOk ? "A chave aparece para quem abrir o site. Prefiram a aleatória ou o e-mail em vez do CPF." : "Essa chave não parece válida para o tipo escolhido. Confiram os números ou o formato."}
+          onCommit={(key) => setPix({ key })}
+        />
+        <div className="row2">
+          <TextField id="pix-name" label="Nome de quem recebe" value={pix.name} maxLength={60} placeholder="Como está no banco" onCommit={(name) => setPix({ name })} />
+          <TextField id="pix-city" label="Cidade da conta" value={pix.city} maxLength={40} placeholder="Ex.: São Paulo" onCommit={(city) => setPix({ city })} />
+        </div>
+        {ready && <p className="notice ok">Pronto! Cada presente ganhou o botão “Presentear com Pix”. Façam um Pix de teste de R$ 1 pelo site para conferir.</p>}
+      </Fold>
+
+      <TextField id="t-gifts-note" label="Recado para os convidados" value={content.giftsNote} maxLength={600} multiline rows={2} placeholder="Ex.: Sua presença é o nosso maior presente." onCommit={(v) => setContent("giftsNote", v)} />
+
+      <h3 className="sub">Presentes</h3>
+      {content.gifts.length === 0 && (
+        <div className="idea-chips" aria-label="Sugestões de presentes">
+          <span className="mono">Comecem com uma sugestão</span>
+          {GIFT_IDEAS.map((g) => (
+            <button key={g.title} type="button" onClick={() => setContent("gifts", [...content.gifts, g])}>
+              {g.title}
+            </button>
+          ))}
+        </div>
+      )}
+      <ListEditor<Gift>
+        items={content.gifts}
+        max={60}
+        empty="Nenhum presente ainda."
+        addLabel="Adicionar presente"
+        make={() => ({ title: "Novo presente", description: "", url: "", priceCents: null })}
+        onChange={(v) => setContent("gifts", v)}
+        render={(g, set, i) => (
+          <>
+            <TextField id={`gift-t-${i}`} label="Presente" value={g.title} maxLength={120} onCommit={(title) => set({ ...g, title })} />
+            <TextField id={`gift-d-${i}`} label="Descrição (opcional)" value={g.description} maxLength={400} onCommit={(description) => set({ ...g, description })} />
+            <div className="row2">
+              <TextField
+                id={`gift-p-${i}`}
+                label="Valor (R$)"
+                value={g.priceCents === null ? "" : (g.priceCents / 100).toFixed(2).replace(".", ",")}
+                maxLength={14}
+                placeholder="Vazio: o convidado escolhe"
+                live={false}
+                onCommit={(v) => set({ ...g, priceCents: parseBRL(v) })}
+              />
+              <TextField id={`gift-u-${i}`} label="Link de uma loja (opcional)" type="url" value={g.url} maxLength={500} placeholder="https://" live={false} onCommit={(url) => set({ ...g, url })} />
+            </div>
+          </>
+        )}
+      />
     </div>
   );
 }

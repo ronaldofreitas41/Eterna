@@ -7,7 +7,7 @@ import SiteWorkspace from "./SiteWorkspace";
 
 export const metadata = { title: "Meu site · Eterna" };
 
-const TABS = ["pedir", "textos", "aparencia", "secoes"] as const;
+const TABS = ["pedir", "textos", "aparencia", "presentes", "secoes"] as const;
 
 export default async function MeuSitePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ aba?: string }> }) {
   const [{ id }, { aba }] = await Promise.all([params, searchParams]);

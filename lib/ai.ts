@@ -228,7 +228,8 @@ export async function generateStudioReply(input: StudioInput): Promise<StudioRep
       `Casal: ${input.couple.partnerOne} e ${input.couple.partnerTwo}`,
       `Data: ${input.couple.date || "não informada"} · Local: ${[input.couple.venue, input.couple.city].filter(Boolean).join(", ") || "não informado"}`,
       input.couple.style && `Estilo descrito no cadastro: ${input.couple.style}`,
-      `Design atual (JSON):\n${JSON.stringify(input.design)}`,
+      // A chave Pix dos noivos não vai para a IA: ela não precisa dela para mudar o design.
+      `Design atual (JSON):\n${JSON.stringify({ ...input.design, content: { ...input.design.content, pix: undefined } })}`,
       `Elementos travados: ${locked}`,
       input.history.length &&
         `Conversa anterior:\n${input.history.map((m) => `${m.role === "user" ? "Noivos" : "Estúdio"}: ${m.content}`).join("\n")}`,

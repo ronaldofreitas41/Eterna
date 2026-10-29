@@ -10,9 +10,10 @@ import type { RefView } from "./ReferenceUploader";
 import type { StudioMessage } from "@/lib/types";
 
 const TABS = [
-  { id: "pedir", label: "Pedir mudança" },
+  { id: "pedir", label: "Assistente" },
   { id: "textos", label: "Textos" },
   { id: "aparencia", label: "Aparência" },
+  { id: "presentes", label: "Presentes" },
   { id: "secoes", label: "Seções" },
 ] as const;
 type Tab = (typeof TABS)[number]["id"];
@@ -59,6 +60,7 @@ export default function SitePanel({ api, weddingId, refs, messages, aiEnabled, c
           <EditorPanel api={api} only="Visual" />
         </>
       )}
+      {tab === "presentes" && <EditorPanel api={api} only="Presentes" />}
       {tab === "secoes" && <EditorPanel api={api} only="Componentes" />}
     </div>
   );

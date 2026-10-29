@@ -36,7 +36,7 @@ const FAQ = [
   },
   {
     q: "A Eterna cobra pelos presentes?",
-    a: "Não. A lista de presentes leva para as lojas que vocês escolherem. Nesta versão não há nenhuma cobrança ou pagamento pela plataforma.",
+    a: "Não. Os convidados presenteiam por Pix, direto na conta de vocês, ou pelas lojas que vocês escolherem. O dinheiro não passa pela Eterna e não há taxa.",
   },
 ];
 

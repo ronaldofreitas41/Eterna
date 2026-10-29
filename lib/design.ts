@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { DEFAULT_THEME, Theme, parseTheme } from "./theme";
 import { DEFAULT_SECTIONS, SectionSetting, normalizeSections } from "./sections";
+import { EMPTY_PIX } from "./pix";
 
 // Tudo o que define a aparência e os textos do site. É o que se salva como rascunho e como versão.
 
@@ -11,6 +12,13 @@ const GiftItem = z.object({
   description: z.string().max(400),
   url: z.string().max(500),
   priceCents: z.number().int().min(0).max(100_000_000).nullable(),
+});
+// Como os convidados pagam os presentes: Pix direto para a conta dos noivos.
+const PixItem = z.object({
+  type: z.enum(["cpf", "phone", "email", "random"]),
+  key: z.string().max(80),
+  name: z.string().max(60),
+  city: z.string().max(40),
 });
 
 export const ContentSchema = z.object({
@@ -25,6 +33,7 @@ export const ContentSchema = z.object({
   faq: z.array(FaqItem).max(30),
   gifts: z.array(GiftItem).max(60),
   giftsNote: z.string().max(600),
+  pix: PixItem,
   thankYou: z.string().max(3000),
 });
 
@@ -47,6 +56,7 @@ export const DEFAULT_CONTENT: Content = {
   faq: [],
   gifts: [],
   giftsNote: "",
+  pix: EMPTY_PIX,
   thankYou: "",
 };
 
@@ -78,3 +88,13 @@ export const formatBRL = (cents: number) =>
   (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export const sameDesign = (a: SiteDesign, b: SiteDesign) => JSON.stringify(a) === JSON.stringify(b);
+
+/** "150", "150,50", "1.500,00", "R$ 150.50" → centavos. Vazio ou inválido → sem valor (o convidado escolhe). */
+export function parseBRL(v: string): number | null {
+  let s = v.replace(/[^\d,.]/g, "");
+  if (!s) return null;
+  if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+  else if (!/\.\d{1,2}$/.test(s)) s = s.replace(/\./g, "");
+  const n = Number(s);
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : null;
+}

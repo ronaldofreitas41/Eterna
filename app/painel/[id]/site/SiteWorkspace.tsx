@@ -15,7 +15,7 @@ type Props = {
   refs: RefView[];
   messages: StudioMessage[];
   aiEnabled: boolean;
-  initialTab?: "pedir" | "textos" | "aparencia" | "secoes";
+  initialTab?: "pedir" | "textos" | "aparencia" | "presentes" | "secoes";
 };
 
 export default function SiteWorkspace({ wedding, design, versions, live, refs, messages, aiEnabled, initialTab }: Props) {

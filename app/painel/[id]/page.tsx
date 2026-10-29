@@ -2,6 +2,7 @@ import Link from "next/link";
 import { one, query } from "@/lib/db";
 import { getOwnedWedding } from "@/lib/panel";
 import { parseDesign } from "@/lib/design";
+import { pixReady } from "@/lib/pix";
 import { daysBetween, formatLongDate, parseDate, resolvePhase, todayInBrazil } from "@/lib/phase";
 import { loadLiveData, publicWedding } from "@/lib/site";
 import type { Guest, Rsvp, Task, WeddingDraft } from "@/lib/types";
@@ -142,6 +143,11 @@ export default async function InicioPage({ params }: { params: Promise<{ id: str
             <span className="mono">Informações do evento</span>
             <strong>{live.schedule.length ? `${live.schedule.length} ${live.schedule.length === 1 ? "item na programação" : "itens na programação"}` : "Programação e locais"}</strong>
             <span className="muted small">Textos, cerimônia, recepção e programação.</span>
+          </Link>
+          <Link href={`${base}/site?aba=presentes`} className="home-link quiet">
+            <span className="mono">Lista de presentes</span>
+            <strong>{design.content.gifts.length ? `${design.content.gifts.length} ${design.content.gifts.length === 1 ? "presente na lista" : "presentes na lista"}` : "Criar a lista de presentes"}</strong>
+            <span className="muted small">{pixReady(design.content.pix) ? "Recebendo por Pix, direto na conta de vocês." : "Recebam por Pix, sem taxas."}</span>
           </Link>
         </div>
       </div>

@@ -3450,3 +3450,46 @@ details.studio-block > summary {
     display: none;
   }
 }
+
+/* Presentes por Pix no site público. */
+.s-pix {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+}
+.s-pix .s-btn {
+  justify-self: stretch;
+}
+.s-pix-box {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+  padding: 14px;
+  border-radius: 6px;
+  background: var(--s-bg);
+}
+.s-pix-qr {
+  width: 180px;
+  max-width: 100%;
+  background: #fff;
+  padding: 6px;
+  border-radius: 4px;
+}
+.s-pix-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.s-pix-free {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  margin-top: 18px;
+}
+.s-layout-centered .s-pix-free {
+  justify-items: center;
+}
+.s-pix-free .s-pix {
+  width: min(320px, 100%);
+}
